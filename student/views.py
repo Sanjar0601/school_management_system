@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from academic.models import ClassRegistration
 from .forms import *
 from .models import *
+from django.views.generic import ListView
+from .filters import SnippetFiler
+from django.db.models import Q, Count
+from django.views.generic import DetailView, UpdateView
 
 def load_upazilla(request):
     district_id = request.GET.get('district')
@@ -22,46 +26,41 @@ def class_wise_student_registration(request):
     return render(request, 'student/class-wise-student-registration.html', context)
 
 def student_registration(request):
-    academic_info_form = AcademicInfoForm(request.POST or None)
     personal_info_form = PersonalInfoForm(request.POST or None, request.FILES or None)
-    student_address_info_form = StudentAddressInfoForm(request.POST or None)
-    guardian_info_form = GuardianInfoForm(request.POST or None)
-    emergency_contact_details_form = EmergencyContactDetailsForm(request.POST or None)
-    previous_academic_info_form = PreviousAcademicInfoForm(request.POST or None)
-    previous_academic_certificate_form = PreviousAcademicCertificateForm(request.POST or None, request.FILES)
-
     if request.method == 'POST':
-        if academic_info_form.is_valid() and personal_info_form.is_valid() and student_address_info_form.is_valid() and guardian_info_form.is_valid() and emergency_contact_details_form.is_valid() and previous_academic_info_form.is_valid() and previous_academic_certificate_form.is_valid():
-            s1 = personal_info_form.save()
-            s2 = student_address_info_form.save()
-            s3 = guardian_info_form.save()
-            s4 = emergency_contact_details_form.save()
-            s5 = previous_academic_info_form.save()
-            s6 = previous_academic_certificate_form.save()
-            academic_info = academic_info_form.save(commit=False)
-            academic_info.personal_info = s1
-            academic_info.address_info = s2
-            academic_info.guardian_info = s3
-            academic_info.emergency_contact_info = s4
-            academic_info.previous_academic_info = s5
-            academic_info.previous_academic_certificate = s6
-            academic_info.save()
+        if personal_info_form.is_valid():
+            personal_info_form.save()
             return redirect('student-list')
-
     context = {
-        'academic_info_form': academic_info_form,
-        'personal_info_form': personal_info_form,
-        'student_address_info_form': student_address_info_form,
-        'guardian_info_form': guardian_info_form,
-        'emergency_contact_details_form': emergency_contact_details_form,
-        'previous_academic_info_form': previous_academic_info_form,
-        'previous_academic_certificate_form': previous_academic_certificate_form
-    }
+         'personal_info_form': personal_info_form,
+         }
     return render(request, 'student/student-registration.html', context)
 
+
+def group_registration(request):
+    group_reg_form = GroupForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST':
+        if group_reg_form.is_valid():
+            group_reg_form.save()
+            return redirect('group-list')
+    context = {
+        'group_form': group_reg_form,
+        }
+    return render(request, 'student/group_form.html', context)
+
+
+def group_list(request):
+    groups = Group.objects.all()
+    students_in_group = Group.objects.annotate(group_count=Count('students'))
+    context = {'groups': students_in_group}
+    return render(request, 'student/group-list.html', context)
+
+
 def student_list(request):
-    student = AcademicInfo.objects.filter(is_delete=False).order_by('-id')
+    student = PersonalInfo.objects.all()
+    print(f'This is function {student}')
     context = {'student': student}
+
     return render(request, 'student/student-list.html', context)
 
 def student_profile(request, reg_no):
@@ -71,51 +70,6 @@ def student_profile(request, reg_no):
     }
     return render(request, 'student/student-profile.html', context)
 
-def student_edit(request, reg_no):
-    student = AcademicInfo.objects.get(registration_no=reg_no)
-    academic_info_form = AcademicInfoForm(instance=student)
-    personal_info_form = PersonalInfoForm(instance=student.personal_info)
-    student_address_info_form = StudentAddressInfoForm(instance=student.address_info)
-    guardian_info_form = GuardianInfoForm(instance=student.guardian_info)
-    emergency_contact_details_form = EmergencyContactDetailsForm(instance=student.emergency_contact_info)
-    previous_academic_info_form = PreviousAcademicInfoForm(instance=student.previous_academic_info)
-    previous_academic_certificate_form = PreviousAcademicCertificateForm(instance=student.previous_academic_certificate)
-
-    if request.method == 'POST':
-        academic_info_form = AcademicInfoForm(request.POST, instance=student)
-        personal_info_form = PersonalInfoForm(request.POST, request.FILES, instance=student.personal_info)
-        student_address_info_form = StudentAddressInfoForm(request.POST, instance=student.address_info)
-        guardian_info_form = GuardianInfoForm(request.POST, instance=student.guardian_info)
-        emergency_contact_details_form = EmergencyContactDetailsForm(request.POST, instance=student.emergency_contact_info)
-        previous_academic_info_form = PreviousAcademicInfoForm(request.POST, instance=student.previous_academic_info)
-        previous_academic_certificate_form = PreviousAcademicCertificateForm(request.POST, request.FILES, instance=student.previous_academic_certificate)
-        if academic_info_form.is_valid() and personal_info_form.is_valid() and student_address_info_form.is_valid() and guardian_info_form.is_valid() and emergency_contact_details_form.is_valid() and previous_academic_info_form.is_valid() and previous_academic_certificate_form.is_valid():
-            s1 = personal_info_form.save()
-            s2 = student_address_info_form.save()
-            s3 = guardian_info_form.save()
-            s4 = emergency_contact_details_form.save()
-            s5 = previous_academic_info_form.save()
-            s6 = previous_academic_certificate_form.save()
-            academic_info = academic_info_form.save(commit=False)
-            academic_info.personal_info = s1
-            academic_info.address_info = s2
-            academic_info.guardian_info = s3
-            academic_info.emergency_contact_info = s4
-            academic_info.previous_academic_info = s5
-            academic_info.previous_academic_certificate = s6
-            academic_info.save()
-            return redirect('student-list')
-
-    context = {
-        'academic_info_form': academic_info_form,
-        'personal_info_form': personal_info_form,
-        'student_address_info_form': student_address_info_form,
-        'guardian_info_form': guardian_info_form,
-        'emergency_contact_details_form': emergency_contact_details_form,
-        'previous_academic_info_form': previous_academic_info_form,
-        'previous_academic_certificate_form': previous_academic_certificate_form
-    }
-    return render(request, 'student/student-edit.html', context)
 
 def student_delete(request, reg_no):
     student = AcademicInfo.objects.get(registration_no=reg_no)
@@ -124,31 +78,51 @@ def student_delete(request, reg_no):
     return redirect('student-list')
 
 def student_search(request):
-    forms = StudentSearchForm()
-    cls_name = request.GET.get('class_info', None)
-    reg_no = request.GET.get('registration_no', None)
-    if cls_name:
-        student = AcademicInfo.objects.filter(class_info=cls_name)
-        if reg_no:
-            student = student.filter(registration_no=reg_no)
-        context = {
-            'forms': forms,
-            'student': student
-        }
-        return render(request, 'student/student-search.html', context)
-    else:
-        student = AcademicInfo.objects.filter(registration_no=reg_no)
-        context = {
-            'forms': forms,
-            'student': student
-        }
-        return render(request, 'student/student-search.html', context)
+    query = ''
+    results = []
+    form = StudentSearchForm(request.GET or None)
+
+    if 'query' in request.GET:
+        form = StudentSearchForm(request.GET)
+        if form.is_valid():
+            query = form.cleaned_data['query']
+            results = PersonalInfo.objects.filter( Q(name__icontains=query) |
+                                                   Q(phone_no__icontains=query) |
+                                                   Q(status__icontains=query))
+        else:
+            form = StudentSearchForm()
+        return render(request, 'student/student-search.html', {'form': form,
+                                                         'query': query,
+                                                         'results': results} )
+
+
+"This is a filter function"
+def BootStrapFilterView(request):
+    qs = PersonalInfo.objects.all()
+    name_contains_query = request.GET.get('name_contains')
+    status_contains_query = request.GET.get('status_contains')
+    level_contains_query = request.GET.get('level_contains')
+
+    if name_contains_query != '' and name_contains_query is not None:
+        qs = qs.filter(name__icontains=name_contains_query)
+    elif status_contains_query != '' and status_contains_query is not None:
+        qs = qs.filter(status__icontains=status_contains_query)
+    elif level_contains_query != '' and level_contains_query is not None:
+        qs = qs.filter(level__icontains=level_contains_query)
+
     context = {
-            'forms': forms,
-            'student': student
-        }
+        'queryset': qs
+    }
     return render(request, 'student/student-search.html', context)
 
+# class SearchView(ListView):
+#     model = PersonalInfo
+#     template_name = 'student/student-search.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data()
+#         context['filter'] = SnippetFiler(self.request.GET, queryset=self.get_queryset())
+#         return context
 
 def enrolled_student(request):
     forms = EnrolledStudentForm()
@@ -195,3 +169,8 @@ def enrolled_student_list(request):
         'student': student
     }
     return render(request, 'student/enrolled-student-list.html', context)
+
+
+class StudentDetailView(DetailView):
+    model = PersonalInfo
+    template_name = "student/student-detail.html"

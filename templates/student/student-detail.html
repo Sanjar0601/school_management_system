@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+ {% extends 'base/base.html' %}
+{% load static %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+        <div class="personal_information">
+        <div class="row">
+          <h2 class="mx-auto">Personal Information</h2>
+        </div>
+        <hr>
+        <div class="row">
+          <div style="font-size:24px; margin-left: 30px align:centre">
+               <p>Name : {{ object.name }}</p>
+              <p>Phone : {{ object.phone_no }}</p>
+              <p>Group : {{ object.group }}</p>
+            <p>Teacher : {{ object.teacher }}</p>
+          </div>
+        </div>
+      </div>
+
+
+
+
+    </div>
+  </div>
+{% endblock %}

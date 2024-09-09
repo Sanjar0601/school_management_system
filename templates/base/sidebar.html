@@ -8,7 +8,7 @@
             <!-- Administration Section Start -->
             <li class="nav-item nav-dropdown">
              <a class="nav-link nav-dropdown-toggle" href="#">
-                 <i class="nav-icon icon-puzzle"></i>Administration</a>
+                 <i class="nav-icon icon-organization"></i>Administration</a>
              <ul class="nav-dropdown-items">
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'designation' %}">
@@ -97,6 +97,24 @@
            </li>
            <!-- Class Section END -->
 
+            <!-- Group Section START -->
+            <li class="nav-item nav-dropdown">
+             <a class="nav-link nav-dropdown-toggle" href="#">
+                 <i class="nav-icon icon-puzzle"></i>Groups</a>
+             <ul class="nav-dropdown-items">
+                 <li class="nav-item">
+                     <a class="nav-link" href="{% url 'group-registration' %}">
+                         <i class="fa fa-plus-circle"></i>Group Registration</a>
+                 </li>
+
+                 <li class="nav-item">
+                     <a class="nav-link" href="{% url 'group-list' %}">
+                         <i class="fa fa-list"></i>Groups List</a>
+                 </li>
+             </ul>
+           </li>
+           <!-- Group Section END -->
+
             <!-- Student Section START -->
             <li class="nav-item nav-dropdown">
              <a class="nav-link nav-dropdown-toggle" href="#">
@@ -106,13 +124,10 @@
                      <a class="nav-link" href="{% url 'student-registration' %}">
                          <i class="fa fa-plus-circle"></i>Student Registration</a>
                  </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="{% url 'student-list' %}">
-                         <i class="fa fa-list"></i>Student List</a>
-                 </li>
+
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'student-search' %}">
-                         <i class="fa fa-search-plus"></i>Student Search</a>
+                         <i class="fa fa-list"></i>Student List</a>
                  </li>
              </ul>
            </li>

@@ -3,48 +3,58 @@ import random
 
 from academic.models import ClassInfo, ClassRegistration
 from address.models import District, Upazilla, Union
-
-class PersonalInfo(models.Model):
+from teacher.models import PersonalInfo
+class Group(models.Model):
     name = models.CharField(max_length=100)
-    photo = models.ImageField(upload_to='student-photos/')
-    blood_group_choice = (
-        ('a+', 'A+'),
-        ('o+', 'O+'),
-        ('b+', 'B+'),
-        ('ab+', 'AB+'),
-        ('a-', 'A-'),
-        ('o-', 'O-'),
-        ('b-', 'B-'),
-        ('ab-', 'AB-')
+    time = models.CharField(max_length=100)
+    day_choices = (
+        ('EVEN', 'EVEN'),
+        ('ODD', 'ODD')
     )
-    blood_group = models.CharField(choices=blood_group_choice, max_length=5)
-    date_of_birth = models.DateField()
-    gender_choice = (
-        ('male', 'Male'),
-        ('female', 'Female'),
-        ('other', 'Other')
-    )
-    gender = models.CharField(choices=gender_choice, max_length=10)
-    phone_no = models.CharField(max_length=11)
-    email = models.EmailField(blank=True, null=True)
-    birth_certificate_no = models.IntegerField()
-    religion_choice = (
-        ('Islam', 'Islam'),
-        ('Hinduism', 'Hinduism'),
-        ('Buddhism', 'Buddhism'),
-        ('Christianity', 'Christianity'),
-        ('Others', 'Others')
-    )
-    religion = models.CharField(choices=religion_choice, max_length=45)
-    nationality_choice = (
-        ('Bangladeshi', 'Bangladeshi'),
-        ('Others', 'Others')
-    )
-    nationality = models.CharField(choices=nationality_choice, max_length=45)
+    day = models.CharField(choices=day_choices, max_length=100)
+    teacher = models.ForeignKey(PersonalInfo, on_delete=models.SET_NULL, null=True, related_name='groups')
 
     def __str__(self):
         return self.name
 
+class PersonalInfo(models.Model):
+    name = models.CharField(max_length=100)
+    date_of_birth = models.CharField(max_length=10)
+    phone_no = models.CharField(max_length=20)
+    status_choices = (
+        ('Comer', 'Comer'),
+        ('Waiting', 'Waiting'),
+        ('Paid', 'Paid'),
+        ('Unpaid', 'Unpaid'),
+        ('First Lesson', 'First Lesson'),
+        ('Wrong Number', 'Wrong Number'),
+
+    )
+    status = models.CharField(choices=status_choices, max_length=20, null=True)
+    source_choices = (
+        ('Instagram', 'Instagram'),
+        ('Telegram', 'Telegram'),
+        ('Friend', 'Friend'),
+        ('Facebook', 'Facebook')
+    )
+    source = models.CharField(choices=source_choices, max_length=20, null=True)
+    goal = models.CharField(max_length=100, null=True)
+    teacher = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE, null=True, blank=True)
+    first_lesson_day = models.DateField(blank=True, null=True)
+    first_come_day = models.DateField(blank=True, null=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, related_name='students')
+    balance = models.IntegerField(default=0)
+    def __str__(self):
+        return self.name
+
+
+class Billing(models.Model):
+    student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE)
+    balance = models.FloatField(max_length=15)
+    date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.student
 class StudentAddressInfo(models.Model):
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     upazilla = models.ForeignKey(Upazilla, on_delete=models.CASCADE)

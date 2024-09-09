@@ -3,6 +3,17 @@ from django import forms
 from .models import *
 from academic.models import ClassInfo
 
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'teacher', 'time', 'day']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'time': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
+
 class AcademicInfoForm(forms.ModelForm):
     class Meta:
         model = AcademicInfo
@@ -14,19 +25,26 @@ class AcademicInfoForm(forms.ModelForm):
 class PersonalInfoForm(forms.ModelForm):
     class Meta:
         model = PersonalInfo
-        fields = '__all__'
+        fields = [
+            'name',
+            'phone_no',
+            'teacher',
+            'group',
+            'goal',
+            'date_of_birth',
+            'first_lesson_day',
+            'first_come_day',
+            'status',
+
+
+        ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'blood_group': forms.Select(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.TextInput(attrs={'class': 'form-control'}),
-            'gender': forms.Select(attrs={'class': 'form-control'}),
-            'phone_no': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.TextInput(attrs={'class': 'form-control'}),
-            'birth_certificate_no': forms.TextInput(attrs={'class': 'form-control'}),
-            'religion': forms.Select(attrs={'class': 'form-control'}),
-            'nationality': forms.Select(attrs={'class': 'form-control'})
-        }
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'goal': forms.TextInput(attrs={'type': 'text'}),
+            'first_lesson_day': forms.DateInput(attrs={'type': 'date'}),
+            'first_come_day': forms.DateInput(attrs={'type': 'date'})
+            }
 
 class StudentAddressInfoForm(forms.ModelForm):
     class Meta:
@@ -113,8 +131,7 @@ class PreviousAcademicCertificateForm(forms.ModelForm):
         fields = '__all__'
 
 class StudentSearchForm(forms.Form):
-    class_info = forms.ModelChoiceField(required=False, queryset=ClassInfo.objects.all())
-    registration_no = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'placeholder': 'Registration No', 'aria-controls': 'DataTables_Table_0'}))
+    query = forms.CharField(label='Search', max_length=100, required=False)
 
 class EnrolledStudentForm(forms.Form):
     class_name = forms.ModelChoiceField(queryset=ClassInfo.objects.all())

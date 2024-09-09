@@ -537,6 +537,7 @@ pre {
   padding-left: 15px;
   margin-right: auto;
   margin-left: auto; }
+
   @media (min-width: 576px) {
     .container {
       max-width: 540px; } }
@@ -9458,3 +9459,20 @@ hr.transparent {
       float: left; }
   *[dir="rtl"] .callout-default {
     border-right-color: #536c79; }
+
+#body {
+    width: 100%; /* Full width */
+    height: 400px; /* Set the height to 400px */
+    background-image: url('static/src/img/login.jpg'); /* Path to the image */
+    background-size: cover; /* Ensure the image covers the entire div */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* No repeating */
+    color: white; /* Text color for better contrast */
+    display: flex; /* Align text in the middle */
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-info {
+
+}

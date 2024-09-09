@@ -37,8 +37,7 @@
                                   <tr role="row">
                                       <th>Id</th>
                                       <th>Name</th>
-                                      <th>Gender</th>
-                                      <th>Nationality</th>
+                                      <th>Groups</th>
                                       <th>Actions</th>
                                   </tr>
                               </thead>
@@ -47,10 +46,7 @@
                                     <tr role="row" class="odd">
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ teacher.name }}</td>
-                                        <td>{{ teacher.gender }}</td>
-                                        <td>
-                                            <span class="badge badge-warning">{{ teacher.nationality }}</span>
-                                        </td>
+                                        <td>{{teacher.group_count}}</td>
                                         <td>
                                             <a class="btn btn-success" href="{% url 'teacher-profile' teacher.id %}">
                                                 <i class="fa fa-search-plus"></i>
