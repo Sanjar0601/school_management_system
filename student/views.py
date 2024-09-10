@@ -2,10 +2,35 @@ from django.shortcuts import render, redirect
 from academic.models import ClassRegistration
 from .forms import *
 from .models import *
+from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
 from .filters import SnippetFiler
 from django.db.models import Q, Count
 from django.views.generic import DetailView, UpdateView
+from django.http import JsonResponse
+
+
+from django.http import JsonResponse
+from .models import PersonalInfo
+
+def student_update(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        status = request.POST.get('status')
+        group_id = request.POST.get('group')
+        teacher_id = request.POST.get('teacher')
+
+        try:
+            student = PersonalInfo.objects.get(id=student_id)
+            student.status = status
+            student.group_id = group_id
+            student.teacher_id = teacher_id
+            student.save()
+            return JsonResponse({'success': True})
+        except PersonalInfo.DoesNotExist:
+            return JsonResponse({'success': False})
+    return JsonResponse({'success': False})
+
 
 
 
@@ -56,6 +81,7 @@ def student_list(request):
 def BootStrapFilterView(request):
     qs = PersonalInfo.objects.all()
     group = Group.objects.all()
+    teachers = Teacher.objects.all()
     status_choices = PersonalInfo.status_choices
     name_contains_query = request.GET.get('name_contains')
     status_contains_query = request.GET.get('status_contains')
@@ -73,7 +99,7 @@ def BootStrapFilterView(request):
       # Print the queryset
 
     context = {
-        'queryset': qs, 'groups': group, 'statuses': status_choices,
+        'queryset': qs, 'groups': group, 'statuses': status_choices, 'teachers': teachers
     }
     return render(request, 'student/student-search.html', context)
 
