@@ -22,6 +22,12 @@ class AcademicInfoForm(forms.ModelForm):
             'class_info': forms.Select(attrs={'class': 'form-control'})
         }
 
+from django import forms
+from .models import PersonalInfo
+
+from django import forms
+from .models import PersonalInfo
+
 class PersonalInfoForm(forms.ModelForm):
     class Meta:
         model = PersonalInfo
@@ -29,22 +35,23 @@ class PersonalInfoForm(forms.ModelForm):
             'name',
             'phone_no',
             'teacher',
-            'group',
             'goal',
-            'date_of_birth',
             'first_lesson_day',
             'first_come_day',
             'status',
-
-
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'goal': forms.TextInput(attrs={'type': 'text'}),
             'first_lesson_day': forms.DateInput(attrs={'type': 'date'}),
-            'first_come_day': forms.DateInput(attrs={'type': 'date'})
-            }
+            'first_come_day': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    # Optional fields
+    first_lesson_day = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    first_come_day = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+
 
 class StudentAddressInfoForm(forms.ModelForm):
     class Meta:

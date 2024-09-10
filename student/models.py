@@ -3,7 +3,7 @@ import random
 
 from academic.models import ClassInfo, ClassRegistration
 from address.models import District, Upazilla, Union
-from teacher.models import PersonalInfo
+from teacher.models import PersonalInfo as Teacher
 class Group(models.Model):
     name = models.CharField(max_length=100)
     time = models.CharField(max_length=100)
@@ -12,15 +12,23 @@ class Group(models.Model):
         ('ODD', 'ODD')
     )
     day = models.CharField(choices=day_choices, max_length=100)
-    teacher = models.ForeignKey(PersonalInfo, on_delete=models.SET_NULL, null=True, related_name='groups')
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='groups')
 
     def __str__(self):
         return self.name
 
+
+class Billing(models.Model):
+    balance = models.FloatField(max_length=15)
+    date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.student
+
+
 class PersonalInfo(models.Model):
     name = models.CharField(max_length=100)
-    date_of_birth = models.CharField(max_length=10)
-    phone_no = models.CharField(max_length=20)
+    phone_no = models.CharField(max_length=100)
     status_choices = (
         ('Comer', 'Comer'),
         ('Waiting', 'Waiting'),
@@ -39,22 +47,16 @@ class PersonalInfo(models.Model):
     )
     source = models.CharField(choices=source_choices, max_length=20, null=True)
     goal = models.CharField(max_length=100, null=True)
-    teacher = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE, null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     first_lesson_day = models.DateField(blank=True, null=True)
     first_come_day = models.DateField(blank=True, null=True)
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, related_name='students')
-    balance = models.IntegerField(default=0)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
+    balance = models.ForeignKey(Billing, on_delete=models.SET_NULL, null=True, blank=True, related_name='balances')
+    comment = models.CharField(max_length=200, null=True)
     def __str__(self):
         return self.name
 
 
-class Billing(models.Model):
-    student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE)
-    balance = models.FloatField(max_length=15)
-    date = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.student
 class StudentAddressInfo(models.Model):
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     upazilla = models.ForeignKey(Upazilla, on_delete=models.CASCADE)
