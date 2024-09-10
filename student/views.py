@@ -55,19 +55,25 @@ def student_list(request):
 "This is a filter function"
 def BootStrapFilterView(request):
     qs = PersonalInfo.objects.all()
+    group = Group.objects.all()
+    status_choices = PersonalInfo.status_choices
     name_contains_query = request.GET.get('name_contains')
     status_contains_query = request.GET.get('status_contains')
-    level_contains_query = request.GET.get('level_contains')
+    group_contains_query = request.GET.get('group_contains')
+    print("Status filter:", status_contains_query)
 
     if name_contains_query != '' and name_contains_query is not None:
         qs = qs.filter(name__icontains=name_contains_query)
     elif status_contains_query != '' and status_contains_query is not None:
-        qs = qs.filter(status__icontains=status_contains_query)
-    elif level_contains_query != '' and level_contains_query is not None:
-        qs = qs.filter(level__icontains=level_contains_query)
+        print("Valid status choices:", [status[0] for status in status_choices])
+        qs = qs.filter(status__iexact=status_contains_query)
+        print("Filtered QuerySet:", qs)
+    elif group_contains_query != '' and group_contains_query is not None:
+        qs = qs.filter(group__icontains=group_contains_query)
+      # Print the queryset
 
     context = {
-        'queryset': qs
+        'queryset': qs, 'groups': group, 'statuses': status_choices,
     }
     return render(request, 'student/student-search.html', context)
 

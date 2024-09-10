@@ -21,22 +21,20 @@
                 <div class="form-group col-md-4">
                     <label for="status_contains">Status</label>
                     <select name="status_contains" id="status_contains" class="form-control">
-                        <option selected="selected">Choose...</option>
-                        <option value="Enrolled">Enrolled</option>
-                        <option value="Waiting">Waiting</option>
-                        <option value="Negative">Negative</option>
+                        <option value="">Choose...</option>
+                        {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if value == request.GET.status_contains %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
                     </select>
+
                 </div>
                 <div class="form-group col-md-4">
-                    <label for="level_contains">Level</label>
-                    <select name="level_contains" id="level_contains" class="form-control">
-                        <option selected="selected">Choose...</option>
-                        <option value="Beginner">Beginner</option>
-                        <option value="Elementary">Elementary</option>
-                        <option value="Pre-Intermediate">Pre-Intermediate</option>
-                        <option value="Intermediate">Intermediate</option>
-                        <option value="Upper-Intermediate">Upper-Intermediate</option>
-                        <option value="Advanced">Advanced</option>
+                    <label for="group_contains">Group</label>
+                    <select name="group_contains" id="group_contains" class="form-control">
+                        <option value="">Choose...</option>
+                        {%for group in groups%}<option value={{group.id}}>{{group.name}}</option>{% endfor %}
                     </select>
                 </div>
             </div>
@@ -98,20 +96,36 @@
                                         <td>{{ student.group }}</td>
                                         <td>{{ student.teacher }}</td>
                                         <td>
-                                            <!-- Conditionally applying color based on status -->
-                                            <span
-                                                    {% if student.status == "Enrolled" %}
-                                            class="badge badge-success"
-                                            {% elif student.status == "Waiting" %}
-                                            class="badge badge-warning"
-                                            {% elif student.status == "Negative" %}
-                                            class="badge badge-danger"
-                                            {% else %}
-                                            class="badge badge-secondary" <!-- Default color if no match -->
-                                            {% endif %}
-
-                                            </span>
-                                        {{ student.status }}
+                                            <span style="
+                {% if student.status == 'Unpaid' %}
+                    background-color: red;
+                    color: black;
+                {% elif student.status == 'Another Branch' %}
+                    background-color: yellow;
+                    color: black;
+                {% elif student.status == 'Paid' %}
+                    background-color: green;
+                    color: black;
+                {% elif student.status == 'First Lesson' %}
+                    background-color: orange;
+                    color: black;
+                {% elif student.status == 'Deactive' %}
+                    background-color: violet;
+                    color: black;
+                {% elif student.status == 'Comer' %}
+                    background-color: pink;
+                    color: white;
+                {% elif student.status == 'Wrong Number' %}
+                    background-color: white;
+                    color: black;
+                {% else %}
+                    background-color: gray;
+                    color: white;
+                {% endif %}
+                padding: 5px;
+            ">
+                {{ student.status }}
+            </span>
                                         </td>
                                         <td>{{ student.first_lesson_day }}</td>
                                         <td>
