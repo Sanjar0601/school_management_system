@@ -184,6 +184,14 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="editBalance">Balance</label>
+                        <input type="number" name="balance" id="editBalance" class="form-control" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="editFirstLessonDay">First Lesson Date</label>
+                        <input type="date" name="first_lesson_day" id="editFirstLessonDay" class="form-control">
+                    </div>
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 </form>
             </div>
@@ -204,6 +212,9 @@ $(document).ready(function() {
         var status = button.data('status');
         var group = button.data('group');
         var teacher = button.data('teacher');
+        var balance = button.data('balance'); // New data attributes
+        var firstLessonDay = button.data('first_lesson_day'); // New data attributes
+
 
         console.log("Modal Data - Student ID:", studentId);  // Debugging
         console.log("Modal Data - Status:", status);         // Debugging
@@ -215,6 +226,8 @@ $(document).ready(function() {
         modal.find('#editStatus').val(status);
         modal.find('#editGroup').val(group);
         modal.find('#editTeacher').val(teacher);
+        modal.find('#editBalance').val(balance); // Set the balance value
+        modal.find('#editFirstLessonDay').val(firstLessonDay);
     });
     function getCookie(name) {
         let cookieValue = null;

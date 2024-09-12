@@ -18,6 +18,8 @@ def student_update(request):
         status = request.POST.get('status')
         group_id = request.POST.get('group')
         teacher_id = request.POST.get('teacher')
+        balance = request.POST.get('balance')  # Get balance from POST data
+        first_lesson_day = request.POST.get('first_lesson_day')  # Get first_lesson_day from POST data
 
         # Fetch the student object from the database
         student = get_object_or_404(PersonalInfo, id=student_id)
@@ -35,6 +37,12 @@ def student_update(request):
         if teacher_id:
             teacher = get_object_or_404(Teacher, id=teacher_id)
             student.teacher = teacher
+
+        if balance:
+            student.balance = balance
+            
+        if first_lesson_day:
+            student.first_lesson_day = first_lesson_day
 
         # Save the changes to the student record
         student.save()
