@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from academic.models import ClassRegistration
 from .forms import *
 from .models import *
@@ -8,11 +8,10 @@ from .filters import SnippetFiler
 from django.db.models import Q, Count
 from django.views.generic import DetailView, UpdateView
 from django.http import JsonResponse
-
-
-from django.http import JsonResponse
 from .models import PersonalInfo
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def student_update(request):
     if request.method == 'POST':
         student_id = request.POST.get('student_id')
@@ -20,17 +19,31 @@ def student_update(request):
         group_id = request.POST.get('group')
         teacher_id = request.POST.get('teacher')
 
-        try:
-            student = PersonalInfo.objects.get(id=student_id)
-            student.status = status
-            student.group_id = group_id
-            student.teacher_id = teacher_id
-            student.save()
-            return JsonResponse({'success': True})
-        except PersonalInfo.DoesNotExist:
-            return JsonResponse({'success': False})
-    return JsonResponse({'success': False})
+        # Fetch the student object from the database
+        student = get_object_or_404(PersonalInfo, id=student_id)
 
+        # Update the student's status
+        if status:
+            student.status = status
+
+        # Update the student's group if provided
+        if group_id:
+            group = get_object_or_404(Group, id=group_id)
+            student.group = group
+
+        # Update the student's teacher if provided
+        if teacher_id:
+            teacher = get_object_or_404(Teacher, id=teacher_id)
+            student.teacher = teacher
+
+        # Save the changes to the student record
+        student.save()
+
+        # Send success response
+        return JsonResponse({'success': True})
+
+    # Send error response for non-POST requests
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 
 
@@ -86,6 +99,8 @@ def BootStrapFilterView(request):
     name_contains_query = request.GET.get('name_contains')
     status_contains_query = request.GET.get('status_contains')
     group_contains_query = request.GET.get('group_contains')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
     print("Status filter:", status_contains_query)
 
     if name_contains_query != '' and name_contains_query is not None:
@@ -95,9 +110,9 @@ def BootStrapFilterView(request):
         qs = qs.filter(status__iexact=status_contains_query)
         print("Filtered QuerySet:", qs)
     elif group_contains_query != '' and group_contains_query is not None:
-        qs = qs.filter(group__icontains=group_contains_query)
-      # Print the queryset
-
+        qs = qs.filter(group__name__icontains=group_contains_query)
+    elif start_date and end_date:
+        qs = qs.filter(first_lesson_day__range=[start_date, end_date])
     context = {
         'queryset': qs, 'groups': group, 'statuses': status_choices, 'teachers': teachers
     }

@@ -28,7 +28,6 @@
                         </option>
                         {% endfor %}
                     </select>
-
                 </div>
                 <div class="form-group col-md-4">
                     <label for="group_contains">Group</label>
@@ -37,6 +36,15 @@
                         {%for group in groups%}<option value={{group.id}}>{{group.name}}</option>{% endfor %}
                     </select>
                 </div>
+                <div class="form-group col-md-1">
+            <label for="start_date">Start Date</label>
+            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+        </div>
+        <div class="form-group col-md-1">
+            <label for="end_date">End Date</label>
+            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+        </div>
+    </div>
             </div>
             <!-- Submit Button -->
             <div class="form-row mx-2"> <!-- Add horizontal margin to create space on the sides -->
@@ -62,19 +70,6 @@
         <div class="card-body">
             <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                 <div class="row">
-                    <div class="col-sm-12 col-md-6">
-                        <div class="dataTables_length" id="DataTables_Table_0_length">
-                            <label>Show
-                                <select name="DataTables_Table_0_length" aria-controls="DataTables_Table_0" class="custom-select custom-select-sm form-control form-control-sm">
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select> entries</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
                     <div class="col-sm-12">
                         <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
                             <thead>
@@ -85,6 +80,7 @@
                                     <th>Teacher</th>
                                     <th>Status</th>
                                     <th>First Lesson</th>
+                                    <th>Balance</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -122,14 +118,20 @@
                     background-color: gray;
                     color: white;
                 {% endif %}
-                padding: 5px;
-            ">
+                padding: 5px;">
                 {{ student.status }}
             </span>
                                         </td>
                                         <td>{{ student.first_lesson_day }}</td>
+                                        <td>{{student.balance}}</td>
                                         <td>
-                                            <!-- Actions for each student -->
+                                            <button class="btn btn-sm btn-warning edit-btn" data-toggle="modal" data-target="#editModal"
+                                                    data-student-id="{{ student.id }}"
+                                                    data-status="{{ student.status }}"
+                                                    data-group="{{ student.group.id }}"
+                                                    data-teacher="{{ student.teacher.id }}">
+                                                Edit
+                                            </button>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -137,24 +139,117 @@
                         </table>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-sm-12 col-md-5">
-                        <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">Showing 1 to 10 of {{ queryset|length }} entries</div>
-                    </div>
-                    <div class="col-sm-12 col-md-7">
-                        <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
-                            <ul class="pagination">
-                                <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a></li>
-                                <li class="paginate_button page-item active"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="1" tabindex="0" class="page-link">1</a></li>
-                                <li class="paginate_button page-item"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">2</a></li>
-                                <li class="paginate_button page-item next" id="DataTables_Table_0_next"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="3" tabindex="0" class="page-link">Next</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Student</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    <input type="hidden" name="student_id" id="editStudentId">
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select name="status" id="editStatus" class="form-control">
+                            <option value="">Choose...</option>
+                            {% for value, label in statuses %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGroup">Group</label>
+                        <select name="group" id="editGroup" class="form-control">
+                            <option value="">Choose...</option>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTeacher">Teacher</label>
+                        <select name="teacher" id="editTeacher" class="form-control">
+                            <option value="">Choose...</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveChangesBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle modal and AJAX request -->
+<script>
+$(document).ready(function() {
+    $('#editModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var studentId = button.data('student-id');
+        var status = button.data('status');
+        var group = button.data('group');
+        var teacher = button.data('teacher');
+
+        console.log("Modal Data - Student ID:", studentId);  // Debugging
+        console.log("Modal Data - Status:", status);         // Debugging
+        console.log("Modal Data - Group:", group);           // Debugging
+        console.log("Modal Data - Teacher:", teacher);       // Debugging
+
+        var modal = $(this);
+        modal.find('#editStudentId').val(studentId);
+        modal.find('#editStatus').val(status);
+        modal.find('#editGroup').val(group);
+        modal.find('#editTeacher').val(teacher);
+    });
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+
+    $('#saveChangesBtn').click(function() {
+        var form = $('#editStudentForm');
+        $.ajax({
+            type: 'POST',
+            url: '{% url "student-update" %}', // Ensure this URL is mapped to the student_update view in urls.py
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Failed to update student.');
+                }
+            }
+        });
+    });
+});
+</script>
 
 {% endblock %}

@@ -39,9 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'rest_framework',
-
     'administration',
     'teacher',
     'student',
@@ -51,6 +49,8 @@ INSTALLED_APPS = [
     'address',
     'account',
     'attendance',
+    'django_celery_beat',
+    'redis'
 ]
 
 MIDDLEWARE = [
@@ -142,3 +142,27 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 JAZZMIN_SETTINGS = JAZZMIN_SETTINGS
+# settings.py
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or your Redis/RabbitMQ URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Redis cache configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    },
+    'redis': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/',  # Replace with your Redis server info
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+# Use the Redis cache as the default cache
+CACHES['default'] = CACHES['redis']

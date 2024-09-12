@@ -9,7 +9,6 @@
     <link rel="shortcut icon" href="{% static 'src/img/favicon.png' %}">
     <title>{% block title %}{% endblock %}</title>
     <!-- In your HTML file -->
-    <link rel="stylesheet" href="path/to/node_modules/bootstrap-icons/font/bootstrap-icons.css">
 
     <!-- Icons -->
     <link href="{% static 'dist/vendors/css/font-awesome.min.css' %}" rel="stylesheet">
@@ -18,6 +17,7 @@
     <!-- Main styles for this application -->
     <link href="{% static 'dist/css/style.css' %}" rel="stylesheet">
     <link href="{% static 'src/css/form.css' %}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     {% block extrahead %}
     {% endblock %}
