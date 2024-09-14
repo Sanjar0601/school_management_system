@@ -7,9 +7,11 @@ from django.views.generic import ListView
 from .filters import SnippetFiler
 from django.db.models import Q, Count
 from django.views.generic import DetailView, UpdateView
+from django.views import View
 from django.http import JsonResponse
 from .models import PersonalInfo
 from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
 
 @csrf_exempt
 def student_update(request):
@@ -113,14 +115,40 @@ def BootStrapFilterView(request):
 
     if name_contains_query != '' and name_contains_query is not None:
         qs = qs.filter(name__icontains=name_contains_query)
-    elif status_contains_query != '' and status_contains_query is not None:
+    if status_contains_query != '' and status_contains_query is not None:
         print("Valid status choices:", [status[0] for status in status_choices])
         qs = qs.filter(status__iexact=status_contains_query)
         print("Filtered QuerySet:", qs)
-    elif group_contains_query != '' and group_contains_query is not None:
-        qs = qs.filter(group__name__icontains=group_contains_query)
+    if group_contains_query != '' and group_contains_query is not None:
+        qs = qs.filter(group__id=group_contains_query)
+
+    def convert_date(date_str):
+        return datetime.strptime(date_str, '%d-%m-%Y').date()
+
+    # Filter by date
+    if start_date:
+        try:
+            start_date = convert_date(start_date)
+            qs = qs.filter(first_lesson_day__gte=start_date)
+        except ValueError:
+            # Handle invalid date format
+            pass
+    if end_date:
+        try:
+            end_date = convert_date(end_date)
+            qs = qs.filter(first_lesson_day__lte=end_date)
+        except ValueError:
+            # Handle invalid date format
+            pass
+
+    if start_date and not end_date:
+        qs = qs.filter(first_lesson_day=start_date)
+    elif end_date and not start_date:
+        qs = qs.filter(first_lesson_day=end_date)
     elif start_date and end_date:
         qs = qs.filter(first_lesson_day__range=[start_date, end_date])
+
+
     context = {
         'queryset': qs, 'groups': group, 'statuses': status_choices, 'teachers': teachers
     }
@@ -131,3 +159,11 @@ def BootStrapFilterView(request):
 class StudentDetailView(DetailView):
     model = PersonalInfo
     template_name = "student/student-detail.html"
+
+
+class GroupStudentsView(View):
+    def get(self, request, *args, **kwargs):
+        group_id = self.kwargs.get('pk')
+        students = PersonalInfo.objects.filter(group=group_id).values('name', 'first_lesson_day')
+        students_list = list(students)  # Convert to list for JSON serialization
+        return JsonResponse({'students': students_list})

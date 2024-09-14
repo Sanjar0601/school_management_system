@@ -9,6 +9,8 @@ urlpatterns = [
     path('group-list', views.group_list, name='group-list'),
     path('student-edit/<pk>', views.StudentDetailView.as_view(), name='student-detail'),
     path('student/update/', views.student_update, name='student-update'),
+    path('group-students/<int:pk>/', views.GroupStudentsView.as_view(), name='group-students'),
+]
 
     # path('sarch', views.BootStrapFilterView, name="filter")
-]
+

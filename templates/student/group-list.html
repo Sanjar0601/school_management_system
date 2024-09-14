@@ -1,95 +1,173 @@
-{% extends 'base/base.html' %}
+{{% extends 'base/base.html' %}
 {% load static %}
 
 {% block content %}
-  <div class="animated fadeIn">
-      <div class="card">
-          <div class="card-header">
-              <i class="fa fa-edit"></i> Group Tables
-
-
-          </div>
-          {% if groups %}
-          <div class="card-body">
-              <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
-                  <div class="row">
-                      <div class="col-sm-12 col-md-6">
-                          <div class="dataTables_length" id="DataTables_Table_0_length">
-                              <label>Show
-                                  <select name="DataTables_Table_0_length" aria-controls="DataTables_Table_0" class="custom-select custom-select-sm form-control form-control-sm">
-                                      <option value="10">10</option>
-                                      <option value="25">25</option>
-                                      <option value="50">50</option>
-                                      <option value="100">100</option>
-                                  </select> entries</label>
-                          </div>
-                      </div>
-                      <div class="col-sm-12 col-md-6">
-                          <div id="DataTables_Table_0_filter" class="dataTables_filter">
-                              <form action="" method="GET">
-                                  {% csrf_token %}
+<div class="animated fadeIn">
+    <div class="card">
+        <div class="card-header">
+            <i class="fa fa-edit"></i> Group Tables
+        </div>
+        {% if groups %}
+        <div class="card-body">
+            <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6">
+                        <div class="dataTables_length" id="DataTables_Table_0_length">
+                            <label>Show
+                                <select name="DataTables_Table_0_length" aria-controls="DataTables_Table_0" class="custom-select custom-select-sm form-control form-control-sm">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select> entries
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-6">
+                        <div id="DataTables_Table_0_filter" class="dataTables_filter">
+                            <form action="" method="GET">
+                                {% csrf_token %}
                                 <label>Search:
-                                     <input type="search" class="form-control form-control-sm" placeholder="Find a student..." aria-controls="DataTables_Table_0" name = " " value="">
+                                    <input type="search" class="form-control form-control-sm" placeholder="Find a student..." aria-controls="DataTables_Table_0" name="search" value="">
                                 </label>
-                                                                  <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
+                            <thead>
+                                <tr role="row">
+                                    <th>Number</th>
+                                    <th>Name</th>
+                                    <th>Teacher</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Enrollment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in groups %}
+                                <tr role="row" class="odd">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <a href="#" class="group-details" data-group-id="{{ group.id }}" data-teacher-name="{{ group.teacher }}" data-toggle="modal" data-target="#groupModal">
+                                            {{ group.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ group.teacher }}</td>
+                                    <td>{{ group.day }}</td>
+                                    <td>{{ group.time }}</td>
+                                    <td>{{ group.group_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">Showing 1 to 10 of 32 entries</div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a></li>
+                                <li class="paginate_button page-item active"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="1" tabindex="0" class="page-link">1</a></li>
+                                <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">2</a></li>
+                                <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="3" tabindex="0" class="page-link">3</a></li>
+                                <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="4" tabindex="0" class="page-link">4</a></li>
+                                <li class="paginate_button page-item next" id="DataTables_Table_0_next"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="5" tabindex="0" class="page-link">Next</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card-body">
+            <h3>No Group Found</h3>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
-                              </form>
-                          </div>
-                      </div>
-                  </div>
-                  <div class="row">
-                      <div class="col-sm-12">
-                          <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
-                              <thead>
-                                  <tr role="row">
-                                      <th>Number</th>
-                                      <th>Name</th>
-                                      <th>Teacher</th>
-                                      <th>Status</th>
-                                      <th>Date</th>
-                                      <th>Enrollment</th>
-                                  </tr>
-                              </thead>
-                              <tbody>
-                                  {% for group in groups %}
-                                    <tr role="row" class="odd">
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ group.name }}</td>
-                                        <td>{{ group.teacher }}</td>
-                                        <td> {{group.day}} </td>
-                                        <td>{{group.time}}</td>
+<!-- Modal -->
+<div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="groupModalLabel">Group Students</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="teacherName" class="font-weight-bold"></p>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>First Lesson Day</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentList">
+                        <!-- Students will be loaded here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                        <td>{{group.group_count}}</td>
-                                    </tr>
-                                  {% endfor %}
-                              </tbody>
-                          </table>
-                      </div>
-                  </div>
-                  <div class="row">
-                      <div class="col-sm-12 col-md-5">
-                          <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">Showing 1 to 10 of 32 entries</div>
-                      </div>
-                      <div class="col-sm-12 col-md-7">
-                          <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
-                              <ul class="pagination">
-                                  <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a></li>
-                                  <li class="paginate_button page-item active"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="1" tabindex="0" class="page-link">1</a></li>
-                                  <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">2</a></li>
-                                  <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="3" tabindex="0" class="page-link">3</a></li>
-                                  <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="4" tabindex="0" class="page-link">4</a></li>
-                                  <li class="paginate_button page-item next" id="DataTables_Table_0_next"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="5" tabindex="0" class="page-link">Next</a></li>
-                              </ul>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          {% else %}
-          <div class="card-body">
-              <h3>No Group Found</h3>
-          </div>
-          {% endif %}
-      </div>
-  </div>
+
+
+  <!-- jQuery and Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+    $('.group-details').on('click', function() {
+        var groupId = $(this).data('group-id');
+        var teacherName = $(this).data('teacher-name');
+        var modal = $('#groupModal');
+        var teacherNameElem = modal.find('#teacherName');
+
+        $.ajax({
+            url: '/student/group-students/' + groupId + '/',
+            method: 'GET',
+            success: function(response) {
+                var studentList = modal.find('#studentList');
+                studentList.empty(); // Clear existing list
+
+                // Set teacher's name
+                teacherNameElem.text('Teacher: ' + teacherName);
+
+                if (response.students && Array.isArray(response.students)) {
+                    response.students.forEach(function(student) {
+                        studentList.append(
+                            '<tr>' +
+                            '<td>' + student.name + '</td>' +
+                            '<td>' + student.first_lesson_day + '</td>' +
+                            '</tr>'
+                        );
+                    });
+                } else {
+                    studentList.append('<tr><td colspan="2">No students found</td></tr>');
+                }
+
+                modal.modal('show'); // Show the modal
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching students:', status, error);
+            }
+        });
+    });
+});
+  </script>
 {% endblock %}
