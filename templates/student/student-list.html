@@ -119,24 +119,98 @@
   </div>
 
   <script>
-    function toggleEdit(studentId) {
-        var fields = ['group', 'teacher', 'status'];
+    $(document).ready(function() {
+    $('.group-details').on('click', function() {
+        var groupId = $(this).data('group-id');
+        var teacherName = $(this).data('teacher-name');
+        var modal = $('#groupModal');
+        var teacherNameElem = modal.find('#teacherName');
+        var todayDateElem = modal.find('#todayDate');
+        var studentList = modal.find('#studentList');
+        var groupIdInput = modal.find('#groupId');
+        var todayDateInput = modal.find('#todayDateInput');
 
-        fields.forEach(function(field) {
-            var span = document.getElementById(field + '_' + studentId);
-            var select = document.getElementById('select_' + field + '_' + studentId);
-            var updateButton = document.getElementById('submit_' + studentId);
+        $.ajax({
+            url: '/student/group-students/' + groupId + '/',
+            method: 'GET',
+            success: function(response) {
+                studentList.empty(); // Clear existing list
+                teacherNameElem.text('Teacher: ' + teacherName);
 
-            if (select.style.display === 'none') {
-                select.style.display = 'inline';
-                updateButton.style.display = 'inline';
-                span.style.display = 'none';
-            } else {
-                select.style.display = 'none';
-                updateButton.style.display = 'none';
-                span.style.display = 'inline';
+                // Format and set today's date as d.m.y
+                var formattedDate = new Date().toLocaleDateString('en-GB'); // Formats date as dd/mm/yyyy
+                todayDateElem.text('Today\'s date: ' + formattedDate);
+                todayDateInput.val(formattedDate);
+
+                if (response.students && Array.isArray(response.students)) {
+                    response.students.forEach(function(student) {
+                        studentList.append(
+                            '<tr>' +
+                            '<td>' + student.name + '</td>' +
+                            '<td>' + student.first_lesson_day + '</td>' +
+                            '<td>' +
+                            '<select name="attendance_' + student.id + '" class="form-control">' +
+                            '<option value="Absent">Absent</option>' +
+                            '<option value="0">0</option>' +
+                            '<option value="1">1</option>' +
+                            '<option value="2">2</option>' +
+                            '<option value="3">3</option>' +
+                            '<option value="4">4</option>' +
+                            '<option value="5">5</option>' +
+                            '</select>' +
+                            '</td>' +
+                            '</tr>'
+                        );
+                    });
+                } else {
+                    studentList.append('<tr><td colspan="3">No students found</td></tr>');
+                }
+
+                groupIdInput.val(groupId);
+                modal.modal('show'); // Show the modal
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching students:', status, error);
             }
         });
+    });
+
+    $('#submitAttendance').on('click', function() {
+        var formData = $('#attendanceForm').serialize(); // Serialize the form data
+
+        $.ajax({
+            url: '/student/save-attendance/', // Endpoint for saving attendance
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token if using Django
+            },
+            success: function(response) {
+                alert('Attendance saved successfully!');
+                $('#groupModal').modal('hide'); // Hide the modal on success
+            },
+            error: function(xhr, status, error) {
+                console.error('Error saving attendance:', status, error);
+                alert('An error occurred while saving attendance.');
+            }
+        });
+    });
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
+});
+
   </script>
 {% endblock %}

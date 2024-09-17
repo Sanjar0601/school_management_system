@@ -10,7 +10,5 @@ urlpatterns = [
     path('student-edit/<pk>', views.StudentDetailView.as_view(), name='student-detail'),
     path('student/update/', views.student_update, name='student-update'),
     path('group-students/<int:pk>/', views.GroupStudentsView.as_view(), name='group-students'),
+    path('save-attendance/', views.SaveAttendanceView.as_view(), name='save-attendance'),
 ]
-
-    # path('sarch', views.BootStrapFilterView, name="filter")
-

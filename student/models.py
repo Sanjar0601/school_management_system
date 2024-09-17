@@ -183,3 +183,26 @@ class EnrolledStudent(models.Model):
     def __str__(self):
         return str(self.roll)
 
+
+class Attendance(models.Model):
+    student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE)
+    date = models.DateField()
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(
+        max_length=10,
+        choices=[
+            ('Absent', 'Absent'),
+            ('0', '0'),
+            ('1', '1'),
+            ('2', '2'),
+            ('3', '3'),
+            ('4', '4'),
+            ('5', '5')
+        ]
+    )
+
+    class Meta:
+        unique_together = ('student', 'date')
+
+    def __str__(self):
+        return f"{self.student.name} - {self.date} - {self.status}"

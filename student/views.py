@@ -6,12 +6,13 @@ from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
 from .filters import SnippetFiler
 from django.db.models import Q, Count
-from django.views.generic import DetailView, UpdateView
+from django.views.generic import DetailView, CreateView
 from django.views import View
 from django.http import JsonResponse
 from .models import PersonalInfo
 from django.views.decorators.csrf import csrf_exempt
-from datetime import datetime
+from datetime import datetime, date, timedelta
+from django.urls import reverse_lazy
 
 @csrf_exempt
 def student_update(request):
@@ -161,9 +162,39 @@ class StudentDetailView(DetailView):
     template_name = "student/student-detail.html"
 
 
+
 class GroupStudentsView(View):
     def get(self, request, *args, **kwargs):
         group_id = self.kwargs.get('pk')
-        students = PersonalInfo.objects.filter(group=group_id).values('name', 'first_lesson_day')
+        students = PersonalInfo.objects.filter(group=group_id).values('id', 'name', 'first_lesson_day')
+        today = datetime.today().strftime('%d.%m.%Y')
         students_list = list(students)  # Convert to list for JSON serialization
-        return JsonResponse({'students': students_list})
+        return JsonResponse({'students': students_list, 'today_date': today})
+
+class SaveAttendanceView(View):
+    def post(self, request, *args, **kwargs):
+        today_date = request.POST.get('today_date')
+        date_obj = datetime.strptime(today_date, '%d.%m.%Y').date()
+
+        for key, value in request.POST.items():
+            if key.startswith('attendance_'):
+                student_id = key.split('_')[1]
+                status = value
+
+                try:
+                    student = PersonalInfo.objects.get(id=student_id)
+                except PersonalInfo.DoesNotExist:
+                    continue
+
+                # Include date_obj when saving Attendance
+                attendance, created = Attendance.objects.get_or_create(
+                    student=student,
+                    date=date_obj,
+                    defaults={'status': status}
+                )
+
+                if not created:  # If attendance record already exists, update it
+                    attendance.status = status
+                    attendance.save()
+
+        return JsonResponse({'message': 'Attendance recorded successfully.'})

@@ -150,3 +150,9 @@ class StudentEnrollForm(forms.Form):
 class SearchEnrolledStudentForm(forms.Form):
     reg_class = forms.ModelChoiceField(queryset=ClassRegistration.objects.all())
     roll_no = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'placeholder': 'Enter Roll'}))
+
+
+class AttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
+        fields = ['student', 'date', 'status']

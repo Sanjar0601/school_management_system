@@ -1,0 +1,42 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Attendance for Group {{ group.name }}</h1>
+<p>Group Status: {{ group.status }}</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                {% for day in lesson_days %}
+                    <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student, day_attendance in attendance_data.items %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    {% for day, attendance in day_attendance.items %}
+                        <td>
+                            <select name="status_{{ student.id }}_{{ day }}">
+                                <option value="Absent" {% if attendance and attendance.status == 'Absent' %}selected{% endif %}>Absent</option>
+                                <option value="0" {% if attendance and attendance.status == '0' %}selected{% endif %}>0</option>
+                                <option value="1" {% if attendance and attendance.status == '1' %}selected{% endif %}>1</option>
+                                <option value="2" {% if attendance and attendance.status == '2' %}selected{% endif %}>2</option>
+                                <option value="3" {% if attendance and attendance.status == '3' %}selected{% endif %}>3</option>
+                                <option value="4" {% if attendance and attendance.status == '4' %}selected{% endif %}>4</option>
+                                <option value="5" {% if attendance and attendance.status == '5' %}selected{% endif %}>5</option>
+                            </select>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit">Save Attendance</button>
+</form>
+{% endblock %}
