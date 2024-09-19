@@ -30,6 +30,7 @@ class PersonalInfo(models.Model):
         ('Unpaid', 'Unpaid'),
         ('First Lesson', 'First Lesson'),
         ('Wrong Number', 'Wrong Number'),
+        ('Deposit', 'Deposit')
 
     )
     status = models.CharField(choices=status_choices, max_length=20, null=True)
@@ -47,7 +48,16 @@ class PersonalInfo(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
     balance = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, null=True)
+    learning_duration = models.CharField(max_length=100, null=True)
     last_deduction = models.DateField(null=True, blank=True)
+    test = models.CharField(max_length=100)
+    languages = (
+        ('Russian', 'Russian'),
+        ('English', 'English'),
+        ('French', 'French')
+    )
+    language = models.Charfield(choices=languages, max_length=30)
+    
     def __str__(self):
         return self.name
 
@@ -186,7 +196,7 @@ class EnrolledStudent(models.Model):
 
 class Attendance(models.Model):
     student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(null=True, blank=True)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     status = models.CharField(
         max_length=10,

@@ -2,18 +2,24 @@
 {% load static %}
 
 {% block content %}
+
 <div class="animated fadeIn">
     <div class="card">
+
         <div class="card-header">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="group-tables-tab" data-toggle="tab" href="#group-tables" role="tab" aria-controls="group-tables" aria-selected="true">Group Tables</a>
+                <li class="nav-item" role="presentation">
+
+                    <a class="nav-link active" id="group-tables-tab" data-bs-toggle="tab" href="#group-tables" role="tab" aria-controls="group-tables" aria-selected="true">Group Tables</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="attendance-tab" data-toggle="tab" href="#attendance" role="tab" aria-controls="attendance" aria-selected="false">Attendance</a>
+
                 </li>
             </ul>
+
         </div>
+
         <div class="card-body">
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="group-tables" role="tabpanel" aria-labelledby="group-tables-tab">
@@ -28,7 +34,7 @@
                                             <option value="25">25</option>
                                             <option value="50">50</option>
                                             <option value="100">100</option>
-                                        </select> entries
+                                        </select>
                                     </label>
                                 </div>
                             </div>
@@ -62,7 +68,7 @@
                                         <tr role="row" class="odd">
                                             <td>{{ forloop.counter }}</td>
                                             <td>
-                                                <a href="#" class="group-details" data-group-id="{{ group.id }}" data-teacher-name="{{ group.teacher }}" data-toggle="modal" data-target="#groupModal">
+                                                <a href="#" class="group-details" data-group-id="{{ group.id }}" data-group-name="{{ group.name }}" data-teacher-name="{{ group.teacher }}" data-toggle="modal" data-target="#groupModal">
                                                     {{ group.name }}
                                                 </a>
                                             </td>
@@ -122,6 +128,7 @@
                 <p id="teacherName" class="font-weight-bold"></p>
                 <p id="todayDate"></p>
                 <form id="attendanceForm"> {% csrf_token %} <table class="table table-striped">
+                        <input type="hidden" name="group" id="groupId" value="">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -143,14 +150,20 @@
     </div>
 </div>
 
+
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
+  var csrfToken = "{{ csrf_token }}";
+
   $(document).ready(function() {
     $('.group-details').on('click', function() {
         var groupId = $(this).data('group-id');
         var teacherName = $(this).data('teacher-name');
+        var groupName = $(this).data('group.id'); // Assuming you set group-name data attribute
         var modal = $('#groupModal');
+        $('#groupId').val(groupId);
+
         var teacherNameElem = modal.find('#teacherName');
         var todayDateElem = $('#todayDate');
 
@@ -195,19 +208,39 @@
             }
         });
 
+        // Update submit button click handler
         $('#submitAttendance').on('click', function() {
             var formData = $('#attendanceForm').serialize();
-            console.log(formData);
+            var currentDate = new Date().toISOString().split('T')[0]; // Format current date as YYYY-MM-DD
+
+
+            // Append current date and group name to form data
+            formData += '&date=' + encodeURIComponent(currentDate);
+             console.log(formData);
+
             $.ajax({
-                url: '/save-attendance/',
+                url: "{% url 'save-attendance' %}",
+                headers: { 'X-CSRFToken': csrfToken },
                 method: 'POST',
                 data: formData,
-                headers: {
-                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
-                },
+
                 success: function(response) {
-                    alert('Attendance recorded successfully.');
-                    modal.modal('hide');
+                    var alertHtml = '<div id="alertContainer" class="alert alert-success alert-dismissible fade show fixed-top" role="alert">' +
+                                    'Attendance recorded successfully.' +
+                                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                                    '<span aria-hidden="true">&times;</span>' +
+                                    '</button>' +
+                                    '</div>';
+
+                    $('body').prepend(alertHtml);
+
+                    $('#groupModal').modal('hide').on('hidden.bs.modal', function () {
+                        $('.modal-backdrop').remove(); // Remove any lingering backdrop
+                    });
+
+                    setTimeout(function() {
+                        $('#alertContainer').alert('close');
+                    }, 5000);
                 },
                 error: function(xhr, status, error) {
                     console.error('Error saving attendance:', status, error);
@@ -215,8 +248,8 @@
             });
         });
     });
-});
-
-
+  });
 </script>
-{% endblock %}
+
+
+{% endblock content %}

@@ -10,5 +10,6 @@ urlpatterns = [
     path('student-edit/<pk>', views.StudentDetailView.as_view(), name='student-detail'),
     path('student/update/', views.student_update, name='student-update'),
     path('group-students/<int:pk>/', views.GroupStudentsView.as_view(), name='group-students'),
-    path('save-attendance/', views.SaveAttendanceView.as_view(), name='save-attendance'),
+    path('student/save-attendance/', views.SaveAttendanceView.as_view(), name='save-attendance'),
+    path('attendace_report', views.AttendanceReportView.as_view(), name='report')
 ]

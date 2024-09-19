@@ -13,6 +13,9 @@ from .models import PersonalInfo
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, date, timedelta
 from django.urls import reverse_lazy
+from django.utils.dateparse import parse_date
+from collections import defaultdict
+from django.utils import timezone
 
 @csrf_exempt
 def student_update(request):
@@ -171,10 +174,22 @@ class GroupStudentsView(View):
         students_list = list(students)  # Convert to list for JSON serialization
         return JsonResponse({'students': students_list, 'today_date': today})
 
+
 class SaveAttendanceView(View):
     def post(self, request, *args, **kwargs):
-        today_date = request.POST.get('today_date')
-        date_obj = datetime.strptime(today_date, '%d.%m.%Y').date()
+        today_date = request.POST.get('date')
+        group_id = request.POST.get('group')
+        group = get_object_or_404(Group, id=group_id)
+        # Validate and parse the date
+        if today_date:
+            today_date = parse_date(today_date)
+        else:
+            return JsonResponse({'error': 'Date is required.'}, status=400)
+
+        if not today_date:
+            return JsonResponse({'error': 'Invalid date format.'}, status=400)
+
+
 
         for key, value in request.POST.items():
             if key.startswith('attendance_'):
@@ -186,11 +201,12 @@ class SaveAttendanceView(View):
                 except PersonalInfo.DoesNotExist:
                     continue
 
-                # Include date_obj when saving Attendance
+                # Save or update the attendance record
                 attendance, created = Attendance.objects.get_or_create(
                     student=student,
-                    date=date_obj,
-                    defaults={'status': status}
+                    date=today_date,
+                    status=status,
+                    group=group# Include group_name if needed
                 )
 
                 if not created:  # If attendance record already exists, update it
@@ -198,3 +214,26 @@ class SaveAttendanceView(View):
                     attendance.save()
 
         return JsonResponse({'message': 'Attendance recorded successfully.'})
+
+class AttendanceReportView(ListView):
+    model = Attendance
+    template_name = "student/attendance_report.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        attendance_records = Attendance.objects.all()
+
+        # Get unique dates
+        unique_dates = sorted(set(record.date for record in attendance_records))
+        context['unique_dates'] = unique_dates
+
+        # Structure data for easy display
+        attendance_data = defaultdict(lambda: {date: '' for date in unique_dates})
+        for record in attendance_records:
+            attendance_data[record.student][record.date] = record.status
+        context['attendance_data'] = attendance_data
+
+        context['today'] = timezone.now().date()  # Add today's date to context
+
+        return context
+

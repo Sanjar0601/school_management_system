@@ -1,30 +1,30 @@
 {% extends 'base/base.html' %}
+{% load static %}
+{% load attendance_filters %}
 
 {% block content %}
-  <div class="container">
-      <h2>Attendance for {{ today }}</h2>
+<div class="container">
+    <h2>Attendance for {{ today }}</h2>
 
-      <table class="table table-striped">
-          <thead>
-              <tr>
-                  <th>Group Name</th>
-                  <th>Student Name</th>
-                  <th>Status</th>
-              </tr>
-          </thead>
-          <tbody>
-              {% for record in object_list %}
-              <tr>
-                  <td>{{ record.name }}</td>
-                  <td>{{ record. student.name }}</td>
-                  <td>{{ record.get_status_display }}</td>
-              </tr>
-              {% empty %}
-              <tr>
-                  <td colspan="3">No attendance records found.</td>
-              </tr>
-              {% endfor %}
-          </tbody>
-      </table>
-  </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                {% for date in unique_dates %}
+                    <th>{{ date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in attendance_data.items %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    {% for date in unique_dates %}
+                        <td>{{  date.date }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

@@ -39,6 +39,7 @@ class PersonalInfoForm(forms.ModelForm):
             'first_lesson_day',
             'first_come_day',
             'status',
+            'source'
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),

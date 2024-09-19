@@ -50,8 +50,8 @@ INSTALLED_APPS = [
     'account',
     'attendance',
     'django_celery_beat',
-    'redis'
-]
+    'redis',
+ ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
