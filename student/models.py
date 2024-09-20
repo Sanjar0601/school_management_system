@@ -50,13 +50,13 @@ class PersonalInfo(models.Model):
     comment = models.CharField(max_length=200, null=True)
     learning_duration = models.CharField(max_length=100, null=True)
     last_deduction = models.DateField(null=True, blank=True)
-    test = models.CharField(max_length=100)
+    test = models.CharField(max_length=100, null=True)
     languages = (
         ('Russian', 'Russian'),
         ('English', 'English'),
         ('French', 'French')
     )
-    language = models.Charfield(choices=languages, max_length=30)
+    language = models.CharField(choices=languages, max_length=30, null=True)
     
     def __str__(self):
         return self.name
@@ -211,8 +211,6 @@ class Attendance(models.Model):
         ]
     )
 
-    class Meta:
-        unique_together = ('student', 'date')
 
     def __str__(self):
         return f"{self.student.name} - {self.date} - {self.status}"

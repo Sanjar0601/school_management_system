@@ -202,17 +202,13 @@ class SaveAttendanceView(View):
                     continue
 
                 # Save or update the attendance record
-                attendance, created = Attendance.objects.get_or_create(
+                obj, created = Attendance.objects.update_or_create(
                     student=student,
                     date=today_date,
-                    status=status,
-                    group=group# Include group_name if needed
+                    group=group,
+                    defaults={'status':status}
+
                 )
-
-                if not created:  # If attendance record already exists, update it
-                    attendance.status = status
-                    attendance.save()
-
         return JsonResponse({'message': 'Attendance recorded successfully.'})
 
 class AttendanceReportView(ListView):
@@ -221,19 +217,10 @@ class AttendanceReportView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        dates = Attendance.objects.values_list('date', flat=True).distinct()
         attendance_records = Attendance.objects.all()
-
-        # Get unique dates
-        unique_dates = sorted(set(record.date for record in attendance_records))
-        context['unique_dates'] = unique_dates
-
-        # Structure data for easy display
-        attendance_data = defaultdict(lambda: {date: '' for date in unique_dates})
-        for record in attendance_records:
-            attendance_data[record.student][record.date] = record.status
-        context['attendance_data'] = attendance_data
-
-        context['today'] = timezone.now().date()  # Add today's date to context
-
+        students = PersonalInfo.objects.all()
+        context['dates'] = dates
+        context['students'] = students
+        context['attendance_records'] = attendance_records
         return context
-

@@ -2,6 +2,8 @@ from django import template
 
 register = template.Library()
 
-@register.simple_tag
-def get_attendance(attendance, date):
-    return attendance.get(date, '')
+@register.filter
+def check_attendance(attendance_records, args):
+    student_id, date = args.split(',')
+    record = attendance_records.filter(student_id=student_id, date=date).first()
+    return record.status if record else '-'

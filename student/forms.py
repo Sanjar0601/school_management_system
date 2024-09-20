@@ -39,13 +39,18 @@ class PersonalInfoForm(forms.ModelForm):
             'first_lesson_day',
             'first_come_day',
             'status',
-            'source'
+            'source',
+            'language',
+            'test',
+            'learning_duration'
+
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'goal': forms.TextInput(attrs={'type': 'text'}),
             'first_lesson_day': forms.DateInput(attrs={'type': 'date'}),
             'first_come_day': forms.DateInput(attrs={'type': 'date'}),
+            'phone_no': forms.NumberInput(attrs={'type': 'number'})
         }
 
     # Optional fields
