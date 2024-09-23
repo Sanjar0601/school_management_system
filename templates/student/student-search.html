@@ -68,19 +68,21 @@
             </div>
         </div>
         <div class="card-body">
-            <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+            <div id="responsive-container" class="dataTables_wrapper dt-bootstrap4 no-footer">
                 <div class="row">
                     <div class="col-sm-12">
+                        <div style="overflow-x: auto">
                         <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
                             <thead>
                                 <tr role="row">
-                                    <th>Number</th>
+                                    <th>№</th>
                                     <th>Name</th>
                                     <th>Group</th>
                                     <th>Teacher</th>
-                                    <th>Status</th>
-                                    <th>First Lesson</th>
+                                    <th>Comment</th>
+                                    <th>Phone</th>
                                     <th>Balance</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -91,6 +93,17 @@
                                         <td>{{ student.name }}</td>
                                         <td>{{ student.group }}</td>
                                         <td>{{ student.teacher }}</td>
+                                        <td>{{student.comment}}</td>
+                                        <td>{{student.phone_no}}</td>
+                                        <td>
+                                            <span style="{% if student.balance < 0%}
+                                                            color:red;
+                                                           {% else %}
+                                                            color:green
+                                                            {% endif%}">
+                                                {{student.balance}}
+                                            </span>
+                                        </td>
                                         <td>
                                             <span style="
                 {% if student.status == 'Unpaid' %}
@@ -122,14 +135,14 @@
                 {{ student.status }}
             </span>
                                         </td>
-                                        <td>{{ student.first_lesson_day }}</td>
-                                        <td>{{student.balance}}</td>
                                         <td>
                                             <button class="btn btn-sm btn-warning edit-btn" data-toggle="modal" data-target="#editModal"
                                                     data-student-id="{{ student.id }}"
                                                     data-status="{{ student.status }}"
                                                     data-group="{{ student.group.id }}"
-                                                    data-teacher="{{ student.teacher.id }}">
+                                                    data-teacher="{{ student.teacher.id }}"
+                                                    data-source="{{student.source}}"
+                                            >
                                                 Edit
                                             </button>
                                         </td>
@@ -138,6 +151,7 @@
                             </tbody>
                         </table>
                     </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -158,6 +172,10 @@
                 <form id="editStudentForm">
                     <input type="hidden" name="student_id" id="editStudentId">
                     <div class="form-group">
+                        <label for="editName">Name</label>
+                        <input type="text" name="name" id="editName" class="form-control">
+                    </div>
+                    <div class="form-group">
                         <label for="editStatus">Status</label>
                         <select name="status" id="editStatus" class="form-control">
                             <option value="">Choose...</option>
@@ -176,11 +194,47 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label for="editComment">Comment</label>
+                        <input type="text" name="comment" id="editComment" class="form-control">
+                     </div>
+                    <div class="form-group">
+                        <label for="editPhone">Phone</label>
+                        <input type="number" name="phone" id="editPhone" class="form-control" value="">
+                     </div>
+                    <div class="form-group">
+                        <label for="editGoal">Goal</label>
+                        <input type="text" name="goal" id="editGoal" class="form-control" value="">
+                     </div>
+                    <div class="form-group">
+                        <label for="editLanguage">Language</label>
+                        <select name="language" id="editLanguage" class="form-control">
+                            <option value="">Choose...</option>
+                            {% for value, label in languages %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                     </div>
+                    <div class="form-group">
+                        <label for="editTest">Test</label>
+                        <input type="text" name="test" id="editTest" class="form-control" value="">
+                     </div>
+
+
+                    <div class="form-group">
                         <label for="editTeacher">Teacher</label>
                         <select name="teacher" id="editTeacher" class="form-control">
                             <option value="">Choose...</option>
                             {% for teacher in teachers %}
                                 <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSource">Source</label>
+                        <select name="source" id="editSource" class="form-control">
+                            <option value="">Choose...</option>
+                            {% for value, label in sources %}
+                                <option value="{{ value }}">{{ label }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -213,13 +267,19 @@ $(document).ready(function() {
         var group = button.data('group');
         var teacher = button.data('teacher');
         var balance = button.data('balance'); // New data attributes
-        var firstLessonDay = button.data('first_lesson_day'); // New data attributes
-
+        var firstLessonDay = button.data('first_lesson_day');// New data attributes
+        var source = button.data('source');
+        var comment = button.data('comment');
+        var phone = button.data('phone')
+        var goal = button.data('goal')
+        var language = button.data('language')
+        var test = button.data('test')
 
         console.log("Modal Data - Student ID:", studentId);  // Debugging
         console.log("Modal Data - Status:", status);         // Debugging
         console.log("Modal Data - Group:", group);           // Debugging
         console.log("Modal Data - Teacher:", teacher);       // Debugging
+        console.log('Modal Data - Source');
 
         var modal = $(this);
         modal.find('#editStudentId').val(studentId);
@@ -228,6 +288,15 @@ $(document).ready(function() {
         modal.find('#editTeacher').val(teacher);
         modal.find('#editBalance').val(balance); // Set the balance value
         modal.find('#editFirstLessonDay').val(firstLessonDay);
+        modal.find('#editSource').val(source);
+        modal.find('#editName').val(name);
+        modal.find('#editComment').val(comment);
+        modal.find('#editPhone').val(phone);
+        modal.find('#editGoal').val(goal);
+        modal.find('#editLanguage').val(language);
+        modal.find('#editTest').val(test);
+
+
     });
     function getCookie(name) {
         let cookieValue = null;

@@ -25,8 +25,14 @@ def student_update(request):
         group_id = request.POST.get('group')
         teacher_id = request.POST.get('teacher')
         balance = request.POST.get('balance')  # Get balance from POST data
-        first_lesson_day = request.POST.get('first_lesson_day')  # Get first_lesson_day from POST data
-
+        first_lesson_day = request.POST.get('first_lesson_day')
+        source = request.POST.get('source')# Get first_lesson_day from POST data
+        name = request.POST.get('name')
+        comment = request.POST.get('comment')
+        phone = request.POST.get('phone')
+        goal = request.POST.get('goal')
+        language = request.POST.get('language')
+        test = request.POST.get('test')
         # Fetch the student object from the database
         student = get_object_or_404(PersonalInfo, id=student_id)
 
@@ -46,9 +52,31 @@ def student_update(request):
 
         if balance:
             student.balance = balance
-            
+
+        if comment:
+            student.comment = comment
+
+        if source:
+            student.source = source
+
+        if name:
+            student.name = name
+
         if first_lesson_day:
             student.first_lesson_day = first_lesson_day
+
+        if phone:
+            student.phone_no = phone
+
+        if goal:
+            student.goal = goal
+
+        if language:
+            student.languages = language
+
+        if test:
+            student.test = test
+
 
         # Save the changes to the student record
         student.save()
@@ -87,7 +115,7 @@ def group_registration(request):
 
 def group_list(request):
     groups = Group.objects.all()
-    students_in_group = Group.objects.annotate(group_count=Count('students'))
+    students_in_group = Group.objects.annotate(group_count=Count('students', filter=Q(students__status='Paid')))
     context = {'groups': students_in_group}
     return render(request, 'student/group-list.html', context)
 
@@ -106,10 +134,12 @@ def student_list(request):
 
 "This is a filter function"
 def BootStrapFilterView(request):
-    qs = PersonalInfo.objects.all()
+    qs = PersonalInfo.objects.select_related('group', 'teacher')
     group = Group.objects.all()
     teachers = Teacher.objects.all()
     status_choices = PersonalInfo.status_choices
+    language_choices = PersonalInfo.languages
+    source_choices = PersonalInfo.source_choices
     name_contains_query = request.GET.get('name_contains')
     status_contains_query = request.GET.get('status_contains')
     group_contains_query = request.GET.get('group_contains')
@@ -154,7 +184,12 @@ def BootStrapFilterView(request):
 
 
     context = {
-        'queryset': qs, 'groups': group, 'statuses': status_choices, 'teachers': teachers
+        'queryset': qs,
+        'groups': group,
+        'statuses': status_choices,
+        'teachers': teachers,
+        'sources': source_choices,
+        'languages': language_choices,
     }
     return render(request, 'student/student-search.html', context)
 

@@ -42,7 +42,8 @@ class PersonalInfoForm(forms.ModelForm):
             'source',
             'language',
             'test',
-            'learning_duration'
+            'learning_duration',
+            'comment'
 
         ]
         widgets = {

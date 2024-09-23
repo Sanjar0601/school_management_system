@@ -46,7 +46,7 @@ class PersonalInfo(models.Model):
     first_lesson_day = models.DateField(blank=True, null=True)
     first_come_day = models.DateField(blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    balance = models.IntegerField(null=True, blank=True)
+    balance = models.IntegerField(null=True, blank=True, default=-599000)
     comment = models.CharField(max_length=200, null=True)
     learning_duration = models.CharField(max_length=100, null=True)
     last_deduction = models.DateField(null=True, blank=True)

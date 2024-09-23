@@ -175,26 +175,6 @@
         });
     });
 
-    $('#submitAttendance').on('click', function() {
-        var formData = $('#attendanceForm').serialize(); // Serialize the form data
-
-        $.ajax({
-            url: '/student/save-attendance/', // Endpoint for saving attendance
-            method: 'POST',
-            data: formData,
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token if using Django
-            },
-            success: function(response) {
-                alert('Attendance saved successfully!');
-                $('#groupModal').modal('hide'); // Hide the modal on success
-            },
-            error: function(xhr, status, error) {
-                console.error('Error saving attendance:', status, error);
-                alert('An error occurred while saving attendance.');
-            }
-        });
-    });
 
     function getCookie(name) {
         var cookieValue = null;
