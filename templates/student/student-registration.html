@@ -1,29 +1,26 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block content %}
-  <div class="card">
+<div class="card">
     <div class="card-header">Student Register Form</div>
     <div class="card-body">
-      <form class="form-control" action="" method="post" enctype="multipart/form-data" id="StudentRegistrationForm" data-upazilla-url={% url 'load-upazilla' %}>
+        <form class="form-control" action="" style="border:none;" method="post" enctype="multipart/form-data" id="StudentRegistrationForm" data-upazilla-url={% url 'load-upazilla' %}>
+            <div class="personal_info">
+                <div class="card" style="border:none;">
+                    <div class="card-header">Personal Information</div>
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ personal_info_form.as_p }}  <!-- This will render the fields with the specified Bootstrap classes -->
+                                            <button id="submit" type="submit" class="btn btn-primary rounded-pill pull-right"  style="padding: 10px 20px;">Submit</button>
 
-        <div class="personal_info">
-          <div class="card">
-            <div class="card-header">Personal Information</div>
-            <div class="card-body">
-              {% csrf_token %}
-              {{ personal_info_form.as_p }}
+                    </div>
+                </div>
+
             </div>
-          </div>
-          <button id="submit" type="submit" class="btn btn-primary pull-right">Submit</button>
-        </div>
-
-        <!-- <button id="" type="button" class="btn btn-primary pull-right">Next</button> -->
-        </div>
-
-      </form>
-      <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-      <script src="{% static 'src/js/registration.js' %}"></script>
-      <script src="{% static 'src/js/address.js' %}"></script>
+        </form>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="{% static 'src/js/registration.js' %}"></script>
+        <script src="{% static 'src/js/address.js' %}"></script>
     </div>
-  </div>
+</div>
 {% endblock %}

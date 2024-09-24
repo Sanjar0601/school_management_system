@@ -1,5 +1,8 @@
 .personal_info {
   display: none;
+  border-radius: 25px; /* Adjust the radius as needed */
+  border: none;/* Optional: customize the border color */
+  padding: 10px; /* Optional: adjust the padding *
 }
 .address_info {
   display: none;

@@ -10,7 +10,10 @@ class GroupForm(forms.ModelForm):
         fields = ['name', 'teacher', 'time', 'day']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'time': forms.TextInput(attrs={'class': 'form-control'})
+            'teacher': forms.Select(attrs={'class': 'form-control'}),
+            'time': forms.TextInput(attrs={'class': 'form-control'}),
+            'day': forms.Select(attrs={'class': 'form-control'}),
+
         }
 
 
@@ -22,11 +25,6 @@ class AcademicInfoForm(forms.ModelForm):
             'class_info': forms.Select(attrs={'class': 'form-control'})
         }
 
-from django import forms
-from .models import PersonalInfo
-
-from django import forms
-from .models import PersonalInfo
 
 class PersonalInfoForm(forms.ModelForm):
     class Meta:
@@ -44,21 +42,25 @@ class PersonalInfoForm(forms.ModelForm):
             'test',
             'learning_duration',
             'comment'
-
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'goal': forms.TextInput(attrs={'type': 'text'}),
-            'first_lesson_day': forms.DateInput(attrs={'type': 'date'}),
-            'first_come_day': forms.DateInput(attrs={'type': 'date'}),
-            'phone_no': forms.NumberInput(attrs={'type': 'number'})
+            'phone_no': forms.NumberInput(attrs={'class': 'form-control', 'type': 'number'}),
+            'teacher': forms.Select(attrs={'class': 'form-control'}),
+            'goal': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_lesson_day': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'first_come_day': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'source': forms.Select(attrs={'class': 'form-control'}),
+            'language': forms.Select(attrs={'class': 'form-control'}),
+            'test': forms.TextInput(attrs={'class': 'form-control'}),
+            'learning_duration': forms.TextInput(attrs={'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
     # Optional fields
     first_lesson_day = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     first_come_day = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
-
-
 
 class StudentAddressInfoForm(forms.ModelForm):
     class Meta:

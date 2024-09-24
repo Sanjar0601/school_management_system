@@ -1460,7 +1460,7 @@ pre {
   background-image: none;
   background-clip: padding-box;
   border: 1px solid #c2cfd6;
-  border-radius: 0;
+  border-radius: 15px;
   transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s; }
   .form-control::-ms-expand {
     background-color: transparent;
@@ -3054,7 +3054,8 @@ tbody.collapse.show {
 .card-body, .card-block {
   -ms-flex: 1 1 auto;
       flex: 1 1 auto;
-  padding: 1.25rem; }
+  padding: 1.25rem;
+border: 1px solid #ced4da;   }
 
 .card-title {
   margin-bottom: 0.75rem; }

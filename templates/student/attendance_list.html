@@ -4,32 +4,75 @@
 
 {% block content %}
 <div class="container">
-    <h2>Attendance for {{ today }}</h2>
- <table class="table table stripped">
-    <thead>
-        <tr>
-            <th>№</th>
-            <th>Имя</th>
-            {% for date in dates %}
-                <th>{{ date }}</th>
-            {% endfor %}
-
-        </tr>
-    </thead>
-    <tbody>
-        {% for student in students %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ student.name }}</td>
-            {% for date in attendance_records %}
-            <td>
-                {{date.status}}
-             </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
+    <div class="animated fadeIn">
+        <div class="card">
+            <div class="card-header">
+                <h2>Attendance for {{ today }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="">
+                    <div class="form-row align-items-end">
+                        <div class="col">
+                            <label for="groupFilter">Group</label>
+                            <select class="form-control" name="group" id="groupFilter">
+                                <option value="">All Groups</option>
+                                {% for group in groups %}
+                                <option value="{{ group.id }}">
+                                    {{ group.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="monthFilter">Month</label>
+                            <select class="form-control" name="month" id="monthFilter">
+                                <option value="">All Months</option>
+                                {% for month in months %}
+                                <option value="{{ month.value }}" {% if request.GET.month == month.value|stringformat:"s" %}selected{% endif %}>
+                                    {{ month.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer mt-3">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
+                                <thead>
+                                    <tr role="row">
+                                        <th>Name</th>
+                                        {% for date in dates %}
+                                            <th>{{ date }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr role="row">
+                                        <td>{{ student.student__name }}</td>
+                                        {% for date in dates %}
+                                            <td>
+                                                {% if attendance_by_student|get_item:student.student__name|get_item:date %}
+                                                    {{ attendance_by_student|get_item:student.student__name|get_item:date }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

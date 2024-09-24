@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from academic.models import ClassRegistration
 from .forms import *
 from .models import *
 from teacher.models import PersonalInfo as Teacher
@@ -15,7 +14,7 @@ from datetime import datetime, date, timedelta
 from django.urls import reverse_lazy
 from django.utils.dateparse import parse_date
 from collections import defaultdict
-from django.utils import timezone
+from django.utils.timezone import now
 
 @csrf_exempt
 def student_update(request):
@@ -246,16 +245,66 @@ class SaveAttendanceView(View):
                 )
         return JsonResponse({'message': 'Attendance recorded successfully.'})
 
-class AttendanceReportView(ListView):
-    model = Attendance
-    template_name = "student/attendance_report.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        dates = Attendance.objects.values_list('date', flat=True).distinct()
-        attendance_records = Attendance.objects.all()
-        students = PersonalInfo.objects.all()
-        context['dates'] = dates
-        context['students'] = students
-        context['attendance_records'] = attendance_records
-        return context
+
+from collections import defaultdict
+from datetime import datetime
+from django.shortcuts import render
+from .models import Attendance, Group
+
+def attendance_table(request):
+    # Get filters from GET parameters
+    group_filter = request.GET.get('group')
+    month_filter = request.GET.get('month')
+
+    # Initialize attendance data and a flag to determine if data is present
+    attendance_data = Attendance.objects.select_related('student', 'group')
+    data_available = False
+
+    # Apply filters if provided
+    if group_filter or month_filter:
+        if group_filter:
+            attendance_data = attendance_data.filter(group_id=group_filter)
+
+        if month_filter:
+            month_filter = int(month_filter)
+            attendance_data = attendance_data.filter(date__month=month_filter)
+
+        # Check if there are any records after filtering
+        if attendance_data.exists():
+            data_available = True
+
+    # Get unique students and dates only if there's data available
+    students = attendance_data.values('student__name').distinct().order_by('student__name') if data_available else []
+    dates = attendance_data.values_list('date', flat=True).distinct().order_by('date') if data_available else []
+
+    # Group attendance by student and date if data is available
+    attendance_by_student = defaultdict(dict)
+    if data_available:
+        for record in attendance_data:
+            attendance_by_student[record.student.name][record.date] = record.status
+
+    # Prepare context for rendering
+    context = {
+        'students': students,
+        'dates': dates,
+        'attendance_by_student': attendance_by_student,
+        'groups': Group.objects.all(),
+        'months': [
+            {'value': 1, 'name': 'January'},
+            {'value': 2, 'name': 'February'},
+            {'value': 3, 'name': 'March'},
+            {'value': 4, 'name': 'April'},
+            {'value': 5, 'name': 'May'},
+            {'value': 6, 'name': 'June'},
+            {'value': 7, 'name': 'July'},
+            {'value': 8, 'name': 'August'},
+            {'value': 9, 'name': 'September'},
+            {'value': 10, 'name': 'October'},
+            {'value': 11, 'name': 'November'},
+            {'value': 12, 'name': 'December'},
+        ],
+        'data_available': data_available,  # Flag to indicate if data is available
+    }
+
+    return render(request, 'student/attendance_list.html', context)
