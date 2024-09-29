@@ -105,8 +105,8 @@ def student_registration(request):
 
 
 def group_registration(request):
-    group_reg_form = GroupForm(request.POST or None, request.FILES or None)
     tenant = getattr(request, 'tenant', None)
+    group_reg_form = GroupForm(request.POST or None, request.FILES or None, tenant=tenant)
     if request.method == 'POST':
         group_reg_form = GroupForm(request.POST, tenant=tenant)
         if group_reg_form.is_valid():

@@ -19,6 +19,11 @@ class GroupForm(forms.ModelForm):
         self.tenant = kwargs.pop('tenant', None)  # Capture tenant and remove from kwargs
         super().__init__(*args, **kwargs)  # Initialize the form as usual
 
+        if self.tenant:
+            self.fields['teacher'].queryset = Teacher.objects.filter(
+                tenant=self.tenant,
+            )
+
     def save(self, commit=True):
         instance = super().save(commit=False)  # Don't save to the database yet
         if self.tenant:
