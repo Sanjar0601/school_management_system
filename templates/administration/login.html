@@ -1,74 +1,94 @@
+{% load static %}
 <!DOCTYPE html>
-
 <html lang="en">
-  <head>
+<head>
     <link href="node_modules/@coreui/icons/css/coreui-icons.min.css" rel="stylesheet">
     <link href="node_modules/flag-icon-css/css/flag-icon.min.css" rel="stylesheet">
     <link href="node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <link href="node_modules/simple-line-icons/css/simple-line-icons.css" rel="stylesheet">
-    <!-- Main styles for this application-->
     <link href="css/style.css" rel="stylesheet">
     <link href="vendors/pace-progress/css/pace.min.css" rel="stylesheet">
-    <!-- Global site tag (gtag.js) - Google Analytics-->
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-118965717-3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      // Shared ID
-      gtag('config', 'UA-118965717-3');
-      // Bootstrap ID
-      gtag('config', 'UA-118965717-5');
-    </script>
     {% include 'base/header.html' %}
-  </head>
-  <body class="app flex-row align-items-center background-image: url('static/src/img/login.jpg')
-
-">
+    <style>
+        .input-group .input-group-prepend {
+            display: flex;
+            align-items: center; /* Vertically center the icon */
+        }
+        .input-group .input-group-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px; /* Ensure enough space for the icon */
+            height: 100%; /* Stretch the icon container to match input height */
+        }
+        .form-control {
+            height: 45px; /* Align height of the input with the icon */
+            padding: 10px; /* Adjust padding for better text alignment */
+        }
+        .input-group {
+            margin-bottom: 1.5rem; /* Adjust spacing between input fields */
+        }
+        .login-container {
+            text-align: center; /* Center-align the content */
+        }
+        .login-title {
+            font-size: 2rem;
+            margin-bottom: 1rem; /* Add space below the title */
+        }
+        .login-subtitle {
+            font-size: 1rem;
+            margin-bottom: 2rem; /* Add more space between subtitle and input fields */
+        }
+        .btn-container {
+            margin-top: 2rem; /* Add spacing above the button */
+        }
+        .btn-primary {
+            width: 100%; /* Make the login button full-width */
+        }
+    </style>
+</head>
+<body class="app flex-row align-items-center" style="background-image: url('{% static "src/img/login_page.png" %}'); background-size: cover; background-position: center;">
     <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card-group">
-            <div class="card p-4">
-              <div class="card-body">
-                <h1>Login</h1>
-                <p class="text-muted">Sign In to your account</p>
-                <form class="" action="" method="post">
-                  {% csrf_token %}
-                  {% for fields in forms %}
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="icon-user"></i>
-                            </span>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card-group">
+                    <div class="card p-4">
+                        <div class="card-body login-container" style="border:none;">
+                            <h1 class="login-title">Login</h1>
+                            <p class="text-muted login-subtitle">Sign In to your account</p>
+                            <form action="{% url 'login' %}" method="post">
+                                {% csrf_token %}
+                                <!-- Username Field -->
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="icon-user"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" name="username" class="form-control" placeholder="Username" required>
+                                </div>
+                                <!-- Password Field -->
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="icon-lock"></i>
+                                        </span>
+                                    </div>
+                                    <input type="password" name="password" class="form-control" placeholder="Password" required>
+                                </div>
+                                <!-- Button -->
+                                <div class="btn-container">
+                                    <input type="submit" value="Login" class="btn btn-primary px-4" />
+                                </div>
+                            </form>
                         </div>
-                        {{ fields }}
                     </div>
-                  {% endfor %}
-                  <div class="row">
-                    <div class="col-6">
-                       <input type="submit" value="Login" class="btn btn-primary px-4" />
-                    </div>
-                                      </div>
-                </form>
-              </div>
-            </div>
-            <div class="card text-white bg-primary py-5 d-md-down-none" style="width:44%">
-              <div class="card-body text-center">
-                <div>
-                  <h2><a href="@polyglotlanguageschool">Telegram</a></h2>
-                  <p style="font-sizec">Welcome to Polyglot Language School</p>
+
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
     <!-- CoreUI and necessary plugins-->
     {% include 'base/js.html' %}
-  </body>
+</body>
 </html>

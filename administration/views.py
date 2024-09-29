@@ -2,36 +2,35 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from teacher.models import Department, Designation
 from .forms import *
+from account.models import TenantUser
 
-def admin_login(request):
-    forms = AdminLoginForm()
+
+def custom_login_view(request):
     if request.method == 'POST':
-        forms = AdminLoginForm(request.POST)
-        if forms.is_valid():
-            username = forms.cleaned_data['username']
-            password = forms.cleaned_data['password']
-            user = authenticate(username=username, password=password)
-            if user:
-                login(request, user)
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Check if the user belongs to multiple tenants
+            tenants = TenantUser.objects.filter(user=user)
+            if tenants.count() == 1:
+                # If only one tenant, automatically set it
+                request.tenant = tenants.first().tenant
                 return redirect('home')
-    context = {'forms': forms}
-    return render(request, 'administration/login.html', context)
+            elif tenants.count() > 1:
+                # If multiple tenants, prompt the user to select one
+                return redirect('select_tenant')
+        else:
+            print('no user')
+            return render(request, 'administration/login.html', {'error': 'Invalid login'})
+    else:
+        return render(request, 'administration/login.html')
+
 
 def admin_logout(request):
     logout(request)
     return redirect('login')
 
-
-def add_designation(request):
-    forms = AddDesignationForm()
-    if request.method == 'POST':
-        forms = AddDesignationForm(request.POST)
-        if forms.is_valid():
-            forms.save()
-            return redirect('designation')
-    designation = Designation.objects.all()
-    context = {'forms': forms, 'designation': designation}
-    return render(request, 'administration/designation.html', context)
 

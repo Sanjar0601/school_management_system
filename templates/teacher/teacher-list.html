@@ -7,7 +7,7 @@
           <div class="card-header">
               <i class="fa fa-edit"></i> Teacher List
           </div>
-          {% if teacher %}
+          {% if teachers %}
           <div class="card-body">
               <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                   <div class="row">
@@ -42,11 +42,11 @@
                                   </tr>
                               </thead>
                               <tbody>
-                                  {% for teacher in teacher %}
+                                  {% for teacher in teachers %}
                                     <tr role="row" class="odd">
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ teacher.name }}</td>
-                                        <td>{{teacher.group_count}}</td>
+                                        <td>{{ teacher.group_count}}</td>
                                         <td>
                                             <a class="btn btn-success" href="{% url 'teacher-profile' teacher.id %}">
                                                 <i class="fa fa-search-plus"></i>

@@ -1,11 +1,5 @@
 from django import forms
-from .models import UserProfile
+from .models import User as UserProfile
 
 class ProfileForm(forms.ModelForm):
-    class Meta:
-        model = UserProfile
-        fields = ['name', 'photo']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'photo': forms.FileInput(attrs={'class': 'form-control'}),
-        }
+    pass

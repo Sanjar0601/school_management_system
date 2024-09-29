@@ -124,7 +124,8 @@ body {
   line-height: 1.5;
   color: #151b1e;
   text-align: left;
-  background-color: #e4e5e6; }
+  background-color: #000000;
+  }
 
 [tabindex="-1"]:focus {
   outline: none !important; }

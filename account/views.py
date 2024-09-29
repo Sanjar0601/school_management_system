@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import User as UserProfile
 from .forms import ProfileForm
 
 def profile(request):

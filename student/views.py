@@ -1,3 +1,4 @@
+import threading
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from .models import *
@@ -15,6 +16,8 @@ from django.urls import reverse_lazy
 from django.utils.dateparse import parse_date
 from collections import defaultdict
 from django.utils.timezone import now
+from account.models import TenantUser
+
 
 @csrf_exempt
 def student_update(request):
@@ -87,10 +90,11 @@ def student_update(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 
-
 def student_registration(request):
-    personal_info_form = PersonalInfoForm(request.POST or None, request.FILES or None)
+    tenant = getattr(request, 'tenant', None)
+    personal_info_form = PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
     if request.method == 'POST':
+        personal_info_form = PersonalInfoForm(request.POST, tenant=tenant)
         if personal_info_form.is_valid():
             personal_info_form.save()
             return redirect('student-search')
@@ -102,7 +106,9 @@ def student_registration(request):
 
 def group_registration(request):
     group_reg_form = GroupForm(request.POST or None, request.FILES or None)
+    tenant = getattr(request, 'tenant', None)
     if request.method == 'POST':
+        group_reg_form = GroupForm(request.POST, tenant=tenant)
         if group_reg_form.is_valid():
             group_reg_form.save()
             return redirect('group-list')
@@ -113,29 +119,70 @@ def group_registration(request):
 
 
 def group_list(request):
-    groups = Group.objects.all()
-    students_in_group = Group.objects.annotate(group_count=Count('students', filter=Q(students__status='Paid')))
+    tenant = getattr(request, 'tenant', None)  # Get the current tenant
+
+    # Get the current TenantUser (if exists)
+    tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
+
+    if tenant and tenant_user:
+        if tenant_user.is_teacher:
+            # Teacher can only see groups where they are assigned as a teacher
+            students_in_group = Group.objects.filter(
+                tenant=tenant,
+                teacher=tenant_user.teacher_profile  # Assuming Group has a ForeignKey to teacher (PersonalInfo)
+            ).annotate(
+                group_count=Count('students', filter=Q(students__status='Paid'))
+            )
+        else:
+            # Admin can see all groups within the tenant
+            students_in_group = Group.objects.filter(
+                tenant=tenant
+            ).annotate(
+                group_count=Count('students', filter=Q(students__status='Paid'))
+            )
+    else:
+        students_in_group = Group.objects.none()  # No groups if no tenant or user is not assigned properly
+
     context = {'groups': students_in_group}
     return render(request, 'student/group-list.html', context)
 
 
 def student_list(request):
-    student = PersonalInfo.objects.all()
-
-
-    context = {'student': student,  }
-
-    return render(request, 'student/student-search.html', context)
-
+    pass
+#     if request.user.is_authenticated:
+#         tenant = getattr(threading.local(), 'tenant', None)
+#         if tenant:
+#             print(f'Current tenant: {tenant.name}')
+#             student = PersonalInfo.objects.filter(tenant=tenant)
+#         else:
+#             data = []
+#     context = {'student': student, }
+#     return render(request, 'student/student-search.html', context)
+#
 
 
 
 
 "This is a filter function"
+
+
 def BootStrapFilterView(request):
-    qs = PersonalInfo.objects.select_related('group', 'teacher')
-    group = Group.objects.all()
-    teachers = Teacher.objects.all()
+    if request.user.is_authenticated:
+        tenant = getattr(request, 'tenant', None)
+        # Fetch tenant from the request
+        if tenant:
+            print("Tenant found")
+            qs = PersonalInfo.objects.filter(tenant=tenant)  # Filter by tenant
+        else:
+            qs = PersonalInfo.objects.none()
+            print('No tenant')# No data if no tenant is found
+        group = Group.objects.filter(tenant=tenant)  # Filter groups by tenant
+        teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
+    else:
+        qs = PersonalInfo.objects.none()  # No data for unauthenticated users
+        group = []
+        teachers = []
+    # Add filtering logic based on GET parameters
     status_choices = PersonalInfo.status_choices
     language_choices = PersonalInfo.languages
     source_choices = PersonalInfo.source_choices
@@ -144,15 +191,12 @@ def BootStrapFilterView(request):
     group_contains_query = request.GET.get('group_contains')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    print("Status filter:", status_contains_query)
 
-    if name_contains_query != '' and name_contains_query is not None:
+    if name_contains_query:
         qs = qs.filter(name__icontains=name_contains_query)
-    if status_contains_query != '' and status_contains_query is not None:
-        print("Valid status choices:", [status[0] for status in status_choices])
+    if status_contains_query:
         qs = qs.filter(status__iexact=status_contains_query)
-        print("Filtered QuerySet:", qs)
-    if group_contains_query != '' and group_contains_query is not None:
+    if group_contains_query:
         qs = qs.filter(group__id=group_contains_query)
 
     def convert_date(date_str):
@@ -164,14 +208,12 @@ def BootStrapFilterView(request):
             start_date = convert_date(start_date)
             qs = qs.filter(first_lesson_day__gte=start_date)
         except ValueError:
-            # Handle invalid date format
             pass
     if end_date:
         try:
             end_date = convert_date(end_date)
             qs = qs.filter(first_lesson_day__lte=end_date)
         except ValueError:
-            # Handle invalid date format
             pass
 
     if start_date and not end_date:
@@ -180,7 +222,6 @@ def BootStrapFilterView(request):
         qs = qs.filter(first_lesson_day=end_date)
     elif start_date and end_date:
         qs = qs.filter(first_lesson_day__range=[start_date, end_date])
-
 
     context = {
         'queryset': qs,
@@ -193,11 +234,9 @@ def BootStrapFilterView(request):
     return render(request, 'student/student-search.html', context)
 
 
-
 class StudentDetailView(DetailView):
     model = PersonalInfo
     template_name = "student/student-detail.html"
-
 
 
 class GroupStudentsView(View):
@@ -222,9 +261,6 @@ class SaveAttendanceView(View):
 
         if not today_date:
             return JsonResponse({'error': 'Invalid date format.'}, status=400)
-
-
-
         for key, value in request.POST.items():
             if key.startswith('attendance_'):
                 student_id = key.split('_')[1]
@@ -247,13 +283,10 @@ class SaveAttendanceView(View):
 
 
 
-from collections import defaultdict
-from datetime import datetime
-from django.shortcuts import render
-from .models import Attendance, Group
 
 def attendance_table(request):
     # Get filters from GET parameters
+    tenant = getattr(request, 'tenant', None)
     group_filter = request.GET.get('group')
     month_filter = request.GET.get('month')
 
@@ -289,7 +322,7 @@ def attendance_table(request):
         'students': students,
         'dates': dates,
         'attendance_by_student': attendance_by_student,
-        'groups': Group.objects.all(),
+        'groups': Group.objects.filter(tenant=tenant),
         'months': [
             {'value': 1, 'name': 'January'},
             {'value': 2, 'name': 'February'},

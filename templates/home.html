@@ -20,7 +20,7 @@
                         </div>
                     </div>
                     <div class="text-value"><a href="{% url 'student-search' %}" class="btn btn-primary">{{ student }}</a></div>
-                    <div>Total Student</div>
+                    <div>Total Student {% if user.is_authenticated%} {{user.username}} {% endif%}</div>
                 </div>
 
                 <div class="chart-wrapper mt-3 mx-3" style="height:70px;">
@@ -126,7 +126,7 @@
                             <a class="dropdown-item" href="#">Something else here</a>
                         </div>
                     </div>
-                    <div class="text-value"><a href="{% url 'class-list' %}" class="btn btn-transparent">{{ total_class }}</a></div>
+                    <div class="text-value"><a href="" class="btn btn-transparent">{{ total_class }}</a></div>
                     <div>Total Groups</div>
                 </div>
                 <div class="chart-wrapper mt-3 mx-3" style="height:70px;">

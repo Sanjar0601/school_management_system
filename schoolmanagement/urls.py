@@ -25,12 +25,8 @@ urlpatterns = [
     path('', include('administration.urls')),
     path('teacher/', include('teacher.urls')),
     path('student/', include('student.urls')),
-    path('academic/', include('academic.urls')),
     path('employee/', include('employee.urls')),
-    path('result/', include('result.urls')),
-    path('address/', include('address.urls')),
     path('account/', include('account.urls')),
-    path('attendance/', include('attendance.urls')),
     # path('advanced_filters/', include('advanced_filters.urls'))
 ]
 urlpatterns += staticfiles_urlpatterns()

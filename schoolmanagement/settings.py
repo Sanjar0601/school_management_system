@@ -43,12 +43,8 @@ INSTALLED_APPS = [
     'administration',
     'teacher',
     'student',
-    'academic',
     'employee',
-    'result',
-    'address',
     'account',
-    'attendance',
     'django_celery_beat',
     'redis',
  ]
@@ -61,6 +57,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'student.tenant_middleware.TenantMiddleware',
+
 ]
 
 ROOT_URLCONF = 'schoolmanagement.urls'

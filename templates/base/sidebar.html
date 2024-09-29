@@ -5,38 +5,15 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'home' %}"><i class="icon-speedometer"></i> Dashboard</a>
             </li>
-            <!-- Administration Section Start -->
-            <li class="nav-item nav-dropdown">
-             <a class="nav-link nav-dropdown-toggle" href="#">
-                 <i class="nav-icon icon-organization"></i>Administration</a>
-             <ul class="nav-dropdown-items">
-                 <li class="nav-item">
-                     <a class="nav-link" href="{% url 'designation' %}">
-                         <i class="fa fa-plus-circle"></i>Add Designation</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="{% url 'district' %}">
-                         <i class="fa fa-plus-circle"></i>Add District</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="{% url 'upazilla' %}">
-                         <i class="fa fa-plus-circle"></i>Add Upazilla</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="{% url 'union' %}">
-                         <i class="fa fa-plus-circle"></i>Add Union</a>
-                 </li>
-             </ul>
-           </li>
 
            <!-- Teacher Section START -->
            <li class="nav-item nav-dropdown">
             <a class="nav-link nav-dropdown-toggle" href="#">
-                <i class="nav-icon icon-puzzle"></i>Teacher</a>
+                <i class="fa-solid fa-graduation-cap"></i>Teacher</a>
             <ul class="nav-dropdown-items">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'teacher-registration' %}">
-                        <i class="fa fa-plus-circle"></i>Teacher Registration</a>
+                        <i class="fa-solid fa-user-plus"></i>Teacher Registration</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'teacher-list' %}">
@@ -50,7 +27,7 @@
             <!-- Group Section START -->
             <li class="nav-item nav-dropdown">
              <a class="nav-link nav-dropdown-toggle" href="#">
-                 <i class="nav-icon icon-puzzle"></i>Groups</a>
+                 <i class="fa-solid fa-users"></i>Groups</a>
              <ul class="nav-dropdown-items">
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'group-registration' %}">
@@ -59,11 +36,11 @@
 
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'group-list' %}">
-                         <i class="fa fa-list"></i>Groups List</a>
+                         <i class="fa fa-list"></i>My Groups</a>
                  </li>
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'report' %}">
-                         <i class="fa fa-list"></i>Attendance Report</a>
+                         <i class="fa-solid fa-chart-simple"></i>Attendance Report</a>
                  </li>
 
              </ul>
@@ -73,13 +50,12 @@
             <!-- Student Section START -->
             <li class="nav-item nav-dropdown">
              <a class="nav-link nav-dropdown-toggle" href="#">
-                 <i class="nav-icon icon-puzzle"></i>Student</a>
+                 <i class="fa-solid fa-user"></i>Student</a>
              <ul class="nav-dropdown-items">
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'student-registration' %}">
-                         <i class="fa fa-plus-circle"></i>Student Registration</a>
+                         <i class="fa-solid fa-user-plus"></i>Student Registration</a>
                  </li>
-
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'student-search' %}">
                          <i class="fa fa-list"></i>Student List</a>
@@ -95,12 +71,13 @@
                 <i class="nav-icon icon-puzzle"></i>Employee</a>
             <ul class="nav-dropdown-items">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'employee-registration' %}">
+                    <a class="nav-link" href="#">
                         <i class="fa fa-plus-circle"></i>Add Employee</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'employee-list' %}">
-                        <i class="fa fa-list"></i>Employee List</a>
+                    <a class="nav-link" href="#"></a>
+                    <a class="nav-link" href="#"></a>
+                        <i class="fa fa-list"></i>Employee List
                 </li>
             </ul>
           </li>
@@ -112,33 +89,21 @@
                <i class="nav-icon icon-puzzle"></i>Result</a>
            <ul class="nav-dropdown-items">
                <li class="nav-item">
-                   <a class="nav-link" href="{% url 'add-subject' %}">
+                   <a class="nav-link" href="#">
                        <i class="fa fa-plus-circle"></i>Add Subject</a>
                </li>
                <li class="nav-item">
-                   <a class="nav-link" href="{% url 'subject-list' %}">
+                   <a class="nav-link" href="#">
                        <i class="fa fa-list"></i>Subject List</a>
                </li>
                <li class="nav-item">
-                   <a class="nav-link" href="{% url 'mark-entry' %}">
+                   <a class="nav-link" href="#">
                        <i class="fa fa-plus-circle"></i>Mark Entry</a>
                </li>
            </ul>
          </li>
          <!-- Result Section END -->
 
-         <!-- Attendence Report Section START -->
-         <li class="nav-item nav-dropdown">
-          <a class="nav-link nav-dropdown-toggle" href="#">
-              <i class="nav-icon icon-puzzle"></i>Attendence Report</a>
-          <ul class="nav-dropdown-items">
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'student-attendance' %}">
-                      <i class="fa fa-plus-circle"></i>Student Attendence</a>
-              </li>
-          </ul>
-        </li>
-        <!-- Attendence Report Section END -->
 
         </ul>
     </nav>

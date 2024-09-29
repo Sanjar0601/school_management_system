@@ -141,7 +141,15 @@
                                                     data-status="{{ student.status }}"
                                                     data-group="{{ student.group.id }}"
                                                     data-teacher="{{ student.teacher.id }}"
-                                                    data-source="{{student.source}}"
+                                                    data-source="{{ student.source }}"
+                                                    data-comment="{{ student.comment }}"
+                                                    data-phone="{{ student.phone_no }}"
+                                                    data-goal="{{ student.goal }}"
+                                                    data-language="{{ student.language }}"
+                                                    data-test="{{ student.test }}"
+                                                    data-balance="{{ student.balance }}"
+                                                    data-first-lesson-day="{{ student.first_lesson_day }}"
+                                                    data-name="{{ student.name }}"
                                             >
                                                 Edit
                                             </button>
@@ -263,6 +271,7 @@ $(document).ready(function() {
     $('#editModal').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget); // Button that triggered the modal
         var studentId = button.data('student-id');
+        var name = button.data('name')
         var status = button.data('status');
         var group = button.data('group');
         var teacher = button.data('teacher');
