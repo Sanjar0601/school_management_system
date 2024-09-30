@@ -88,9 +88,9 @@ WSGI_APPLICATION = 'schoolmanagement.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'polyglot',
         'USER': 'postgres',
-        'PASSWORD': '1234',
+        'PASSWORD': '12345',
         'HOST': 'localhost',  # or your PostgreSQL host
         'PORT': '5432',       # default PostgreSQL port
     }
@@ -140,6 +140,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Change 'staticfiles' to your preferred directory name
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
