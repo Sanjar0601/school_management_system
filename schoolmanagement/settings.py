@@ -16,7 +16,7 @@ from .juzmin import JAZZMIN_SETTINGS
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_URL = "postgresql://postgres:HrZQYJYJEtWinCDMzhrnoVAzOAyUkKYH@postgres.railway.internal:5432/railway"
+DATABASE_URL = "postgresql://postgres:UHqCJKcOFKqKAPGPFbQxrZExJYIxrcgb@postgres.railway.internal:5432/railway"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'account',
     'django_celery_beat',
     'redis',
-    'whitenoise.runserver_nostatic'
+    'whitenoise.runserver_nostatic',
+    'dj_database_url'
  ]
 
 MIDDLEWARE = [
