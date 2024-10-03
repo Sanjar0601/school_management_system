@@ -88,9 +88,9 @@ WSGI_APPLICATION = 'schoolmanagement.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'polyglot',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': '12345',
+        'PASSWORD': '1234',
         'HOST': 'localhost',  # or your PostgreSQL host
         'PORT': '5432',       # default PostgreSQL port
     }
