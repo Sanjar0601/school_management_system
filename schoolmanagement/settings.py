@@ -16,8 +16,7 @@ from .juzmin import JAZZMIN_SETTINGS
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_URL = "postgresql://postgres:UHqCJKcOFKqKAPGPFbQxrZExJYIxrcgb@postgres.railway.internal:5432/railway"
-
+DATABASE_URL = os.getenv('DATABASE_URL')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -25,7 +24,7 @@ DATABASE_URL = "postgresql://postgres:UHqCJKcOFKqKAPGPFbQxrZExJYIxrcgb@postgres.
 SECRET_KEY = 'aw=%fl(=n$r@bci1ct$^wxnc-w#i_lr$jx_b9%(^6&j%^5l-v1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
