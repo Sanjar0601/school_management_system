@@ -47,10 +47,12 @@ INSTALLED_APPS = [
     'account',
     'django_celery_beat',
     'redis',
+    'whitenoise.runserver_nostatic'
  ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,9 +90,9 @@ WSGI_APPLICATION = 'schoolmanagement.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'polyglot',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': '12345',
+        'PASSWORD': '1234',
         'HOST': 'localhost',  # or your PostgreSQL host
         'PORT': '5432',       # default PostgreSQL port
     }
@@ -173,3 +175,5 @@ CACHES = {
 
 # Use the Redis cache as the default cache
 CACHES['default'] = CACHES['redis']
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
