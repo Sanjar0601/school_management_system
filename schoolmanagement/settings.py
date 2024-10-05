@@ -26,7 +26,7 @@ DATABASE_URL = os.getenv('postgresql://postgres:UHqCJKcOFKqKAPGPFbQxrZExJYIxrcgb
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = 'aw=%fl(=n$r@bci1ct$^wxnc-w#i_lr$jx_b9%(^6&j%^5l-v1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
