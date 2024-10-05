@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'redis',
     'whitenoise.runserver_nostatic',
-    'dj_database_url'
+    'dj_database_url',
+    'environ'
  ]
 
 MIDDLEWARE = [
