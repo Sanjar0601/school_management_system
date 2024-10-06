@@ -20,7 +20,7 @@
                         </div>
                     </div>
                     <div class="text-value"><a href="{% url 'student-search' %}" class="btn btn-primary">{{ student }}</a></div>
-                    <div>Total Student {% if user.is_authenticated%} Jokes Aside {% endif%}</div>
+                    <div>Total Student {% if user.is_authenticated%} {% endif%}</div>
                 </div>
 
                 <div class="chart-wrapper mt-3 mx-3" style="height:70px;">
