@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from account.models import Tenant, TenantAwareManager
 
 
-
 class Group(models.Model):
     name = models.CharField(max_length=100)
     time = models.CharField(max_length=100)
@@ -21,8 +20,6 @@ class Group(models.Model):
 
     def __str__(self):
         return self.name
-
-
 
 
 class PersonalInfo(models.Model):
@@ -69,8 +66,6 @@ class PersonalInfo(models.Model):
         return self.name
 
 
-
-
 class Attendance(models.Model):
     student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE)
     date = models.DateField(null=True, blank=True)
@@ -88,7 +83,6 @@ class Attendance(models.Model):
             ('5', '5')
         ]
     )
-
 
     def __str__(self):
         return f"{self.student.name} - {self.date} - {self.status}"
