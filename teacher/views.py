@@ -7,18 +7,27 @@ from .models import PersonalInfo
 
 
 def teacher_registration(request):
-    tenant = getattr(request, 'tenant', None)
-    form = forms.PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
-    if request.method == 'POST':
-        form = forms.PersonalInfoForm(request.POST, tenant=tenant)
-        if form.is_valid():
-            personal_info = form.save(commit=False)
-            personal_info.save()
-            return redirect('teacher-list')
-    context = {
-        'form': form,
+    try:
+        tenant = getattr(request, 'tenant', None)
+        form = forms.PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
+
+        if request.method == 'POST':
+            form = forms.PersonalInfoForm(request.POST, tenant=tenant)
+
+            if form.is_valid():
+                personal_info = form.save(commit=False)
+                personal_info.save()
+                return redirect('teacher-list')
+
+        context = {
+            'form': form,
         }
-    return render(request, 'teacher/teacher-registration.html', context)
+        return render(request, 'teacher/teacher-registration.html', context)
+
+    except Exception as e:
+        # Log the exception and return an error message or page
+        print(f"Error in teacher_registration: {e}")
+        return render(request, 'error_page.html', {'error': str(e)})
 
 
 def teacher_list(request):
