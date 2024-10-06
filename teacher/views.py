@@ -7,26 +7,18 @@ from .models import PersonalInfo
 
 
 def teacher_registration(request):
-    try:
-        form = forms.PersonalInfoForm(request.POST)
+    form = forms.PersonalInfoForm()
+    if request.method == 'POST':
+        form = forms.PersonalInfoForm(request.POST, request.FILES)
+        if form.is_valid() :
+            personal_info = form.save(commit=False)
+            personal_info.save()
+            return redirect('teacher-list')
 
-        if request.method == 'POST':
-            form = forms.PersonalInfoForm(request.POST)
-
-            if form.is_valid():
-                personal_info = form.save(commit=False)
-                personal_info.save()
-                return redirect('teacher-list')
-
-        context = {
-            'form': form,
+    context = {
+        'form': form,
         }
-        return render(request, 'teacher/teacher-registration.html', context)
-
-    except Exception as e:
-        # Log the exception and return an error message or page
-        print(f"Error in teacher_registration: {e}")
-        return render(request, 'error_page.html', {'error': str(e)})
+    return render(request, 'teacher/teacher-registration.html', context)
 
 
 def teacher_list(request):

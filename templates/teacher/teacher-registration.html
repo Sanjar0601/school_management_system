@@ -5,23 +5,21 @@
   <div class="card">
     <div class="card-header">Teacher Register Form</div>
     <div class="card-body">
-      <form class="form-control" action="" method="post" enctype="multipart/form-data" id="StudentRegistrationForm">
-
+      <form class="form-control" action="" method="post" style="border:none" enctype="multipart/form-data" id="StudentRegistrationForm" }>
         <div class="personal_info">
           <div class="card">
-            <div class="card-header">Personal Information</div>
+            <div class="card-header">Personal Informatio</div>
             <div class="card-body">
               {% csrf_token %}
               {{ form.as_p }}
             </div>
           </div>
-          <button id="submit" type="submit" class="btn btn-primary pull-right">Submit</button>
-        </div>
-
-        <!-- <button id="" type="button" class="btn btn-primary pull-right">Next</button> -->
+            <button id="submit" type="submit" class="btn btn-primary pull-right">Submit</button>
         </div>
 
       </form>
+        </div>>
+      </div>
       <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
       <script src="{% static 'src/js/registration.js' %}"></script>
       <script src="{% static 'src/js/address.js' %}"></script>

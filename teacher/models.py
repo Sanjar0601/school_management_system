@@ -3,7 +3,7 @@ from administration.models import Designation
 
 
 class PersonalInfo(models.Model):
-    name = models.CharField(max_length=45)
+    name = models.CharField(max_length=45, )
     phone_no = models.CharField(max_length=11, unique=True)
     email = models.CharField(max_length=255, unique=True)
     date = models.DateTimeField(auto_now_add=True)
