@@ -7,14 +7,14 @@ from .models import PersonalInfo
 
 
 def teacher_registration(request):
-    form = forms.PersonalInfoForm()
+    tenant = getattr(request, 'tenant', None)
+    form = forms.PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
     if request.method == 'POST':
-        form = forms.PersonalInfoForm(request.POST, request.FILES)
-        if form.is_valid() :
+        form = forms.PersonalInfoForm(request.POST, tenant=tenant)
+        if form.is_valid():
             personal_info = form.save(commit=False)
             personal_info.save()
             return redirect('teacher-list')
-
     context = {
         'form': form,
         }

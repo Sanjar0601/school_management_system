@@ -28,6 +28,8 @@ class TenantUser(models.Model):
     @property
     def is_admin(self):
         return not self.is_teacher
+
+
 class TenantAwareManager(models.Manager):
     def get_queryset(self):
         current_tenant = getattr(threading.local(), 'tenant', None)
