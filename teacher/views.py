@@ -8,11 +8,10 @@ from .models import PersonalInfo
 
 def teacher_registration(request):
     try:
-        tenant = getattr(request, 'tenant', None)
-        form = forms.PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
+        form = forms.PersonalInfoForm(request.POST)
 
         if request.method == 'POST':
-            form = forms.PersonalInfoForm(request.POST, tenant=tenant)
+            form = forms.PersonalInfoForm(request.POST)
 
             if form.is_valid():
                 personal_info = form.save(commit=False)
