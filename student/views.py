@@ -93,6 +93,7 @@ def student_update(request):
 def student_registration(request):
     tenant = getattr(request, 'tenant', None)
     personal_info_form = PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
+    print(tenant)
     if request.method == 'POST':
         personal_info_form = PersonalInfoForm(request.POST, tenant=tenant)
         if personal_info_form.is_valid():
