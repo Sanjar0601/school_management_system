@@ -2,14 +2,15 @@ from django.shortcuts import render, redirect
 from django.db.models import Count
 from . import forms
 from .models import PersonalInfo
-
+from account.models import TenantUser
 # Create your views here.
 
 
 def teacher_registration(request):
-    form = forms.PersonalInfoForm()
+    tenant = getattr(request, 'tenant', None)
+    form = forms.PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
     if request.method == 'POST':
-        form = forms.PersonalInfoForm(request.POST, request.FILES)
+        form = forms.PersonalInfoForm(request.POST, request.FILES, tenant=tenant)
         if form.is_valid() :
             personal_info = form.save(commit=False)
             personal_info.save()
