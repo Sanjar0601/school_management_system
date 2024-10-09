@@ -11,7 +11,7 @@ class Group(models.Model):
     time = models.CharField(max_length=100)
     day_choices = (
         ('Tue/Thur/Sat', 'Tue/Thur/Sat'),
-        ('Mon/Wed/Fri', 'Mon/Wed/Fri')
+        ('M/W/F', 'M/W/F')
     )
     day = models.CharField(choices=day_choices, max_length=100)
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='groups')
