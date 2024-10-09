@@ -41,6 +41,7 @@ class PersonalInfoForm(forms.ModelForm):
             'name',
             'phone_no',
             'teacher',
+            'group',
             'goal',
             'first_lesson_day',
             'first_come_day',
@@ -49,12 +50,14 @@ class PersonalInfoForm(forms.ModelForm):
             'language',
             'test',
             'learning_duration',
-            'comment'
+            'comment',
+
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone_no': forms.NumberInput(attrs={'class': 'form-control', 'type': 'number'}),
             'teacher': forms.Select(attrs={'class': 'form-control'}),
+            'group': forms.Select(attrs={'class':'form-control'}),
             'goal': forms.TextInput(attrs={'class': 'form-control'}),
             'first_lesson_day': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'first_come_day': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
