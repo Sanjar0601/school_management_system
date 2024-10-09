@@ -30,7 +30,7 @@ def teacher_list(request):
         # Filter by tenant and count related groups (adjust 'groups' to the correct related field name)
         teacher = PersonalInfo.objects.filter(tenant=tenant).annotate(group_count=Count('groups'))
     else:
-        teacher = PersonalInfo.objects.none()  # No results if tenant is None
+        teacher = PersonalInfo.objects.filter(tenant=tenant).annotate(group_count=Count('groups'))
 
     context = {'teachers': teacher}
     return render(request, 'teacher/teacher-list.html', context)
