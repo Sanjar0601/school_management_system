@@ -49,6 +49,7 @@ def teacher_delete(request, teacher_id):
     teacher.save()
     return redirect('teacher-list')
 
+
 def teacher_edit(request, teacher_id):
     teacher = PersonalInfo.objects.get(id=teacher_id)
     form = forms.PersonalInfoForm(instance=teacher)

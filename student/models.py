@@ -10,7 +10,7 @@ class Group(models.Model):
     name = models.CharField(max_length=100)
     time = models.CharField(max_length=100)
     day_choices = (
-        ('Tue/Thur/Sat', 'Tue/Thur/Sat'),
+        ('T/T/S', 'T/T/S'),
         ('M/W/F', 'M/W/F')
     )
     day = models.CharField(choices=day_choices, max_length=100)
@@ -19,7 +19,7 @@ class Group(models.Model):
     objects = TenantAwareManager()
 
     def __str__(self):
-        return self.name
+        return f'{self.name} | {self.teacher} | {self.day} | {self.time}'
 
 
 class PersonalInfo(models.Model):

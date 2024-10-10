@@ -5,7 +5,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'home' %}"><i class="icon-speedometer"></i> Dashboard</a>
             </li>
-
+            {% if is_teacher == False %}
            <!-- Teacher Section START -->
            <li class="nav-item nav-dropdown">
             <a class="nav-link nav-dropdown-toggle" href="#">
@@ -22,6 +22,7 @@
             </ul>
           </li>
           <!-- Teacher Section END -->
+            {% endif %}
 
 
             <!-- Group Section START -->

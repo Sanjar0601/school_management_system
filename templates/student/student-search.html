@@ -33,7 +33,7 @@
                     <label for="group_contains">Group</label>
                     <select name="group_contains" id="group_contains" class="form-control">
                         <option value="">Choose...</option>
-                        {%for group in groups%}<option value={{group.id}}>{{group.name}}</option>{% endfor %}
+                        {%for group in groups%}<option value={{group.id}}>{{ group.name }} | {{group.teacher.name}} | {{group.day}} | {{group.time}}</option>{% endfor %}
                     </select>
                 </div>
                 <div class="form-group col-md-1">
@@ -45,7 +45,7 @@
             <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
         </div>
     </div>
-            </div>
+
             <!-- Submit Button -->
             <div class="form-row mx-2"> <!-- Add horizontal margin to create space on the sides -->
                 <div class="form-group col-md-8"> <!-- Align the button with previous fields -->
@@ -148,7 +148,7 @@
                                                     data-language="{{ student.language }}"
                                                     data-test="{{ student.test }}"
                                                     data-balance="{{ student.balance }}"
-                                                    data-first-lesson-day="{{ student.first_lesson_day }}"
+                                                    data-first_lesson_day="{{ student.first_lesson_day|date:'Y-m-d' }}"
                                                     data-name="{{ student.name }}"
                                             >
                                                 Edit
@@ -197,7 +197,7 @@
                         <select name="group" id="editGroup" class="form-control">
                             <option value="">Choose...</option>
                             {% for group in groups %}
-                                <option value="{{ group.id }}">{{ group.name }}</option>
+                                <option value="{{ group.id }}">{{ group.name }} | {{group.teacher.name}} | {{group.day}} | {{group.time}}</option>
                             {% endfor %}
                         </select>
                     </div>

@@ -58,6 +58,7 @@
                                             <th>Status</th>
                                             <th>Date</th>
                                             <th>Enrollment</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -73,6 +74,9 @@
                                             <td>{{ group.day }}</td>
                                             <td>{{ group.time }}</td>
                                             <td>{{ group.group_count }}</td>
+                                            <td> <a class="btn btn-info" href="#">
+                                                <i class="fa fa-edit"></i>
+                                            </a></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
