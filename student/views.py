@@ -180,7 +180,13 @@ def BootStrapFilterView(request):
         # Fetch tenant from the request
         if tenant:
             print("Tenant found")
+            tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
             qs = PersonalInfo.objects.filter(tenant=tenant)  # Filter by tenant
+            if tenant_user and tenant_user.teacher_profile:
+                print('User is a teacher')
+                qs = qs.filter(teacher=tenant_user.teacher_profile)
+            else:
+                qs = PersonalInfo.objects.none()
         else:
             qs = PersonalInfo.objects.none()
             print('No tenant')# No data if no tenant is found
