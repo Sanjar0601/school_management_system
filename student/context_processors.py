@@ -1,2 +1,2 @@
 def is_teacher(request):
-    return {'is_teacher': getattr(request.user, 'is_teacher', False)}
+    return {'is_teacher': getattr(request.tenant, 'is_teacher', False)}

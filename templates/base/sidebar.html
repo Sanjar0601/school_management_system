@@ -1,3 +1,5 @@
+{% load tenant_tags %}
+{% has_teacher_profile as profile_exists %}
 {% load static %}
 <div class="sidebar">
     <nav class="sidebar-nav">
@@ -5,8 +7,8 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'home' %}"><i class="icon-speedometer"></i> Dashboard</a>
             </li>
-            {% if is_teacher == False %}
            <!-- Teacher Section START -->
+                            {% if not profile_exists %}
            <li class="nav-item nav-dropdown">
             <a class="nav-link nav-dropdown-toggle" href="#">
                 <i class="fa-solid fa-graduation-cap"></i>Teacher</a>
@@ -21,8 +23,8 @@
                 </li>
             </ul>
           </li>
-          <!-- Teacher Section END -->
             {% endif %}
+          <!-- Teacher Section END -->
 
 
             <!-- Group Section START -->
@@ -30,10 +32,12 @@
              <a class="nav-link nav-dropdown-toggle" href="#">
                  <i class="fa-solid fa-users"></i>Groups</a>
              <ul class="nav-dropdown-items">
+                 {% if not profile_exists %}
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'group-registration' %}">
                          <i class="fa fa-plus-circle"></i>Group Registration</a>
                  </li>
+                 {% endif %}
 
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'group-list' %}">
@@ -53,10 +57,12 @@
              <a class="nav-link nav-dropdown-toggle" href="#">
                  <i class="fa-solid fa-user"></i>Student</a>
              <ul class="nav-dropdown-items">
+                                 {% if not profile_exists %}
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'student-registration' %}">
                          <i class="fa-solid fa-user-plus"></i>Student Registration</a>
                  </li>
+                 {% endif %}
                  <li class="nav-item">
                      <a class="nav-link" href="{% url 'student-search' %}">
                          <i class="fa fa-list"></i>Student List</a>
