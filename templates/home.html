@@ -1,4 +1,6 @@
 {% extends 'base/base.html' %}
+{% load tenant_tags %}
+{% has_teacher_profile as profile_exists %}
 {% load static %}
 {% block title %} School Management System {% endblock %}
 {% block content %}
@@ -58,7 +60,7 @@
                             <a class="dropdown-item" href="#">Something else here</a>
                         </div>
                     </div>
-                    <div class="text-value"><a href="{% url 'teacher-list' %}" class="btn btn-transparent">{{ teacher }}</a></div>
+                    <div class="text-value"><a href="#" class="btn btn-transparent">{{ teacher }}</a></div>
                     <div>Total Teacher</div>
                 </div>
                 <div class="chart-wrapper mt-3 mx-3" style="height:70px;">
@@ -96,7 +98,7 @@
                             <a class="dropdown-item" href="#">Something else here</a>
                         </div>
                     </div>
-                    <div class="text-value"><a href="{% url 'employee-list' %}" class="btn btn-transparent">{{ employee }}</a></div>
+                    <div class="text-value"><a href="#" class="btn btn-transparent">{{ employee }}</a></div>
                     <div>Total Employee</div>
                 </div>
                 <div class="chart-wrapper mt-3" style="height:70px;">
@@ -126,7 +128,7 @@
                             <a class="dropdown-item" href="#">Something else here</a>
                         </div>
                     </div>
-                    <div class="text-value"><a href="" class="btn btn-transparent">{{ total_class }}</a></div>
+                    <div class="text-value"><a href="#" class="btn btn-transparent">{{ total_class }}</a></div>
                     <div>Total Groups</div>
                 </div>
                 <div class="chart-wrapper mt-3 mx-3" style="height:70px;">
