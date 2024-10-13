@@ -177,10 +177,11 @@ def student_list(request):
 def BootStrapFilterView(request):
     if request.user.is_authenticated:
         tenant = getattr(request, 'tenant', None)
+        tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
+
         # Fetch tenant from the request
         if tenant:
             print("Tenant found")
-            tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
             qs = PersonalInfo.objects.filter(tenant=tenant)  # Filter by tenant
             if tenant_user and tenant_user.teacher_profile:
                 print('User is a teacher')
@@ -244,6 +245,7 @@ def BootStrapFilterView(request):
         'teachers': teachers,
         'sources': source_choices,
         'languages': language_choices,
+        'tenant_user': tenant_user,
     }
     return render(request, 'student/student-search.html', context)
 

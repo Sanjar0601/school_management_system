@@ -1,5 +1,8 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load tenant_tags %}
+{% has_teacher_profile as profile_exists %}
+
 
 {% block content %}
 <div class="animated fadeIn">
@@ -136,6 +139,8 @@
             </span>
                                         </td>
                                         <td>
+                                            {% if not tenant_user.teacher_profile %}
+
                                             <button class="btn btn-sm btn-warning edit-btn" data-toggle="modal" data-target="#editModal"
                                                     data-student-id="{{ student.id }}"
                                                     data-status="{{ student.status }}"
@@ -149,10 +154,10 @@
                                                     data-test="{{ student.test }}"
                                                     data-balance="{{ student.balance }}"
                                                     data-first_lesson_day="{{ student.first_lesson_day|date:'Y-m-d' }}"
-                                                    data-name="{{ student.name }}"
-                                            >
+                                                    data-name="{{ student.name }}">
                                                 Edit
                                             </button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
