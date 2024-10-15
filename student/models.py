@@ -32,7 +32,9 @@ class PersonalInfo(models.Model):
         ('Unpaid', 'Unpaid'),
         ('First Lesson', 'First Lesson'),
         ('Wrong Number', 'Wrong Number'),
-        ('Deposit', 'Deposit')
+        ('Deposit', 'Deposit'),
+        ('Deleted', 'Deleted'),
+
 
     )
     status = models.CharField(choices=status_choices, max_length=20, null=True)
@@ -40,7 +42,9 @@ class PersonalInfo(models.Model):
         ('Instagram', 'Instagram'),
         ('Telegram', 'Telegram'),
         ('Friend', 'Friend'),
-        ('Facebook', 'Facebook')
+        ('Facebook', 'Facebook'),
+        ('Flayer', 'Flayer'),
+        ('Reklama', 'Reklama')
     )
     source = models.CharField(choices=source_choices, max_length=20, null=True, blank=True)
     tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='student_tenants')
@@ -58,7 +62,8 @@ class PersonalInfo(models.Model):
     languages = (
         ('Russian', 'Russian'),
         ('English', 'English'),
-        ('French', 'French')
+        ('French', 'French'),
+        ('German', 'German')
     )
     language = models.CharField(choices=languages, max_length=30, null=True, blank=True)
 

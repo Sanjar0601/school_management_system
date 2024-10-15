@@ -81,6 +81,9 @@ class PersonalInfoForm(forms.ModelForm):
             self.fields['teacher'].queryset = Teacher.objects.filter(
                 tenant=self.tenant,
             )
+            self.fields['group'].queryset = Group.objects.filter(
+                tenant=self.tenant,
+            )
 
     def save(self, commit=True):
         instance = super().save(commit=False)  # Don't save to the database yet

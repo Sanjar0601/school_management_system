@@ -148,12 +148,6 @@ def group_list(request):
     return render(request, 'student/group-list.html', context)
 
 
-#def group_edit(request, group_id):
- #   group = Group.objects.get(id=group_id)
-  #  form = forms.GroupForm(instance=group)
-   # if request.method == 'POST':
-    #    form = forms.GroupForm(request.POST, request.FILES, instance=group)
-     #   if form.is_valid():
 
 def student_list(request):
     pass
