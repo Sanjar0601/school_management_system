@@ -12,46 +12,54 @@
         </div>
         <form method="GET" action=".">
             <!-- Name Filter -->
-            <div class="form-row mx-2 mt-4"> <!-- Add horizontal margin to create space on the sides -->
-                <div class="form-group col-md-8"> <!-- Reduced the column width to make Name field shorter -->
-                    <div class="input-group">
-                        <input class="form-control py-2 border-right-10 border" type="search" name="name_contains" placeholder="Name...">
-                    </div>
-                </div>
-            </div>
-            <!-- Status and Level Filters in two columns -->
-            <div class="form-row mx-2"> <!-- Add horizontal margin to create space on the sides -->
-                <div class="form-group col-md-4">
-                    <label for="status_contains">Status</label>
-                    <select name="status_contains" id="status_contains" class="form-control">
-                        <option value="">Choose...</option>
-                        {% for value, label in statuses %}
-                        <option value="{{ value }}" {% if value == request.GET.status_contains %}selected{% endif %}>
-                            {{ label }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group col-md-4">
-                    <label for="group_contains">Group</label>
-                    <select name="group_contains" id="group_contains" class="form-control">
-                        <option value="">Choose...</option>
-                        {%for group in groups%}<option value={{group.id}}>{{ group.name }} | {{group.teacher.name}} | {{group.day}} | {{group.time}}</option>{% endfor %}
-                    </select>
-                </div>
-                <div class="form-group col-md-1">
-            <label for="start_date">Start Date</label>
-            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
-        </div>
-        <div class="form-group col-md-1">
-            <label for="end_date">End Date</label>
-            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+            <div class="form-row mx-2 mt-3 align-items-end"> <!-- First row: Name, Status, Group -->
+    <div class="form-group col-md-4"> <!-- Name field -->
+        <label for="name_contains">Name</label>
+        <div class="input-group">
+            <input class="form-control py-1.5 border-right-10 border" type="search" name="name_contains" id="name_contains" placeholder="Name...">
         </div>
     </div>
 
+    <div class="form-group col-md-4"> <!-- Status field -->
+        <label for="status_contains">Status</label>
+        <select name="status_contains" id="status_contains" class="form-control">
+            <option value="">Choose...</option>
+            {% for value, label in statuses %}
+            <option value="{{ value }}" {% if value == request.GET.status_contains %}selected{% endif %}>
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group col-md-4"> <!-- Group field -->
+        <label for="group_contains">Group</label>
+        <select name="group_contains" id="group_contains" class="form-control">
+            <option value="">Choose...</option>
+            {% for group in groups %}
+            <option value="{{ group.id }}">{{ group.name }} | {{ group.teacher.name }} | {{ group.day }} | {{ group.time }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+<div class="form-row mx-2 mt-1"> <!-- Second row: Start Date, End Date -->
+    <div class="form-group col-md-5"> <!-- Start Date field -->
+        <label for="start_date">Start Date</label>
+        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+    </div>
+
+    <div class="form-group col-md-5"> <!-- End Date field -->
+        <label for="end_date">End Date</label>
+        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+    </div>
+</div>
+</div>
+
+
+
             <!-- Submit Button -->
-            <div class="form-row mx-2"> <!-- Add horizontal margin to create space on the sides -->
-                <div class="form-group col-md-8"> <!-- Align the button with previous fields -->
+            <div class="form-row mx-3 mt-2" > <!-- Add horizontal margin to create space on the sides -->
+                <div class="form-group col-md-1"> <!-- Align the button with previous fields -->
                     <button type="submit" class="btn btn-primary w-100">Search</button> <!-- w-100 ensures the button takes full width of the column -->
                 </div>
             </div>
