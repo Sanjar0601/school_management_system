@@ -1,8 +1,8 @@
 # myapp/tests.py
 
 from django.test import TransactionTestCase
-from student.models import PersonalInfo as Student
-from student.tasks import deduct_student_balances
+from models import PersonalInfo as Student
+from tasks import deduct_student_balances
 from freezegun import freeze_time
 
 

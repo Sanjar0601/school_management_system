@@ -9,12 +9,9 @@
         <div class="card-header">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
-
                     <a class="nav-link active" id="group-tables-tab" data-bs-toggle="tab" href="#group-tables" role="tab" aria-controls="group-tables" aria-selected="true">Group Tables</a>
                 </li>
-
             </ul>
-
         </div>
 
         <div class="card-body">
@@ -40,7 +37,7 @@
                                     <form action="" method="GET">
                                         {% csrf_token %}
                                         <label>Search:
-                                            <input type="search" class="form-control form-control-sm" placeholder="Find a student..." aria-controls="DataTables_Table_0" name="search" value="">
+                                            <input type="search" class="form-control form-control-sm" placeholder="Find a group..." aria-controls="DataTables_Table_0" name="search" value="">
                                         </label>
                                         <button type="submit" class="btn btn-primary btn-sm">Search</button>
                                     </form>
@@ -65,192 +62,138 @@
                                         {% for group in groups %}
                                         <tr role="row" class="odd">
                                             <td>{{ forloop.counter }}</td>
-                                            <td>
-                                                <a href="#" class="group-details" data-group-id="{{ group.id }}" data-group-name="{{ group.name }}" data-teacher-name="{{ group.teacher }}" data-toggle="modal" data-target="#groupModal">
-                                                    {{ group.name }}
-                                                </a>
-                                            </td>
+                                            <td>{{ group.name }}</td>
                                             <td>{{ group.teacher }}</td>
                                             <td>{{ group.day }}</td>
                                             <td>{{ group.time }}</td>
                                             <td>{{ group.group_count }}</td>
-                                            <td> <a class="btn btn-info" href="#">
-                                                <i class="fa fa-edit"></i>
-                                            </a></td>
+                                            <td>
+                                                <a class="btn btn-info edit-group-btn" href="#"
+                                                   data-group-id="{{ group.id }}"
+                                                   data-group-name="{{ group.name }}"
+                                                   data-group-teacher="{{ group.teacher.id}}"
+                                                   data-group-day="{{ group.day }}"
+                                                   data-group-time="{{ group.time }}"
+                                                   data-toggle="modal"
+                                                   data-target="#editGroupModal">
+                                                    <i class="fa fa-edit"></i> Edit
+                                                </a>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12 col-md-5">
-                                <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">Showing 1 to 10 of 32 entries</div>
-                            </div>
-                            <div class="col-sm-12 col-md-7">
-                                <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
-                                    <ul class="pagination">
-                                        <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a></li>
-                                        <li class="paginate_button page-item active"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="1" tabindex="0" class="page-link">1</a></li>
-                                        <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">2</a></li>
-                                        <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="3" tabindex="0" class="page-link">3</a></li>
-                                        <li class="paginate_button page-item "><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="4" tabindex="0" class="page-link">4</a></li>
-                                        <li class="paginate_button page-item next" id="DataTables_Table_0_next"><a href="#" aria-controls="DataTables_Table_0" data-dt-idx="5" tabindex="0" class="page-link">Next</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     {% else %}
                     <div class="card-body">
-                        <h3>No Group Found</h3>
+                        <h3>No Groups Found</h3>
                     </div>
                     {% endif %}
-                </div>
-
-                <div class="tab-pane fade" id="attendance" role="tabpanel" aria-labelledby="attendance-tab">
-                    <h3>Attendance Content</h3>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel" aria-hidden="true">
+<!-- Edit Group Modal -->
+<div class="modal fade" id="editGroupModal" tabindex="-1" role="dialog" aria-labelledby="editGroupModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="groupModalLabel">Group Students</h5>
+                <h5 class="modal-title" id="editGroupModalLabel">Edit Group</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p id="teacherName" class="font-weight-bold"></p>
-                <p id="todayDate"></p>
-                <form id="attendanceForm"> {% csrf_token %} <table class="table table-striped">
-                        <input type="hidden" name="group" id="groupId" value="">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>First Lesson Day</th>
-                                <th>Attendance</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentList">
-                        </tbody>
-                    </table>
-                    <button type="button" class="btn btn-primary" id="submitAttendance">Submit</button>
-                </form>
+                <form id="editGroupForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="group_id" id="editGroupId">
+                    <div class="form-group">
+                        <label for="editGroupName">Group Name</label>
+                        <input type="text" class="form-control" id="editGroupName" name="name">
+                    </div>
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <!-- Select field for Teacher -->
+                    <div class="form-group">
+                        <label for="editGroupTeacher">Teacher</label>
+                        <select class="form-control" id="editGroupTeacher" name="teacher">
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Select field for Day -->
+                    <div class="form-group">
+                        <label for="editGroupDay">Day</label>
+                        <select class="form-control" id="editGroupDay" name="day">
+                            {% for value, label in days %}
+                            <option value="{{ value }}">{{label}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editGroupTime">Time</label>
+                        <input type="text" class="form-control" id="editGroupTime" name="time">
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
   var csrfToken = "{{ csrf_token }}";
 
-  $(document).ready(function() {
-    $('.group-details').on('click', function() {
+$(document).ready(function() {
+    $('.edit-group-btn').on('click', function() {
         var groupId = $(this).data('group-id');
-        var teacherName = $(this).data('teacher-name');
-        var groupName = $(this).data('group.id'); // Assuming you set group-name data attribute
-        var modal = $('#groupModal');
-        $('#groupId').val(groupId);
+        var url = '/group/' + groupId + '/edit/';
+        var groupName = $(this).data('group-name');
+        var groupTeacher = $(this).data('group-teacher');
+        var groupDay = $(this).data('group-day');
+        var groupTime = $(this).data('group-time');
+        var groupCount = $(this).data('group-count');
 
-        var teacherNameElem = modal.find('#teacherName');
-        var todayDateElem = $('#todayDate');
+        // Populate form fields with data
+        $('#editGroupId').val(groupId);
+        $('#editGroupName').val(groupName);
+        $('#editGroupTeacher').val(groupTeacher);  // Set teacher in select field
+        $('#editGroupDay').val(groupDay);  // Set day in select field
+        $('#editGroupTime').val(groupTime);
+        $('#editGroupCount').val(groupCount);
+    });
 
+    $('#editGroupForm').on('submit', function(event) {
+        event.preventDefault();
+        var groupId = $('#editGroupId').val();  // Get group ID from hidden field
+        var url = '/group/' + groupId + '/edit/';
+        var formData = $(this).serialize();
         $.ajax({
-            url: '/student/group-students/' + groupId + '/',
-            method: 'GET',
+            url: '{% url "edit_group" %}',
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
             success: function(response) {
-                var studentList = modal.find('#studentList');
-                studentList.empty();
-
-                teacherNameElem.text('Teacher: ' + teacherName);
-                todayDateElem.text(response.today_date);
-
-                if (response.students && Array.isArray(response.students)) {
-                    response.students.forEach(function(student) {
-                        studentList.append(
-                            '<tr>' +
-                            '<td>' + student.name + '</td>' +
-                            '<td>' + student.first_lesson_day + '</td>' +
-                            '<td>' +
-                            '<select name="attendance_' + student.id + '">' +
-                            '<option value="Absent">Absent</option>' +
-                            '<option value="0">0</option>' +
-                            '<option value="1">1</option>' +
-                            '<option value="2">2</option>' +
-                            '<option value="3">3</option>' +
-                            '<option value="4">4</option>' +
-                            '<option value="5">5</option>' +
-                            '</select>' +
-                            '</td>' +
-                            '</tr>'
-                        );
-                    });
-                } else {
-                    studentList.append('<tr><td colspan="3">No students found</td></tr>');
-                }
-
-                modal.modal('show');
+                location.reload();
             },
             error: function(xhr, status, error) {
-                console.error('Error fetching students:', status, error);
+                console.error('Error updating group:', status, error);
+                alert('An error occurred while updating the group.');
             }
         });
-
-        // Update submit button click handler
-        $('#submitAttendance').on('click', function() {
-            var formData = $('#attendanceForm').serialize();
-            var currentDate = new Date().toISOString().split('T')[0]; // Format current date as YYYY-MM-DD
-
-
-            // Append current date and group name to form data
-            formData += '&date=' + encodeURIComponent(currentDate);
-             console.log(formData);
-
-            $.ajax({
-                url: "{% url 'save-attendance' %}",
-                headers: { 'X-CSRFToken': csrfToken },
-                method: 'POST',
-                data: formData,
-
-                success: function(response) {
-                    var alertHtml = '<div id="alertContainer" class="alert alert-success alert-dismissible fade show fixed-top" role="alert">' +
-                                    'Attendance recorded successfully.' +
-                                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
-                                    '<span aria-hidden="true">&times;</span>' +
-                                    '</button>' +
-                                    '</div>';
-
-                    $('body').prepend(alertHtml);
-
-                    $('#groupModal').modal('hide').on('hidden.bs.modal', function () {
-                        $('.modal-backdrop').remove(); // Remove any lingering backdrop
-                    });
-
-                    setTimeout(function() {
-                        $('#alertContainer').alert('close');
-                    }, 5000);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error saving attendance:', status, error);
-                }
-            });
-        });
     });
-  });
+});
+
 </script>
 
-
-{% endblock content %}
+{% endblock %}

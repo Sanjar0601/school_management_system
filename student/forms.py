@@ -106,3 +106,20 @@ class AttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
         fields = ['student', 'date', 'status']
+
+
+class GroupEditForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'time', 'day', 'teacher']  # fields to be edited in the modal form
+
+    widgets = {
+        'teacher': forms.Select(attrs={'class': 'form-control'}),
+        'day': forms.Select(attrs={'class': 'form-control'})
+    }
+    def __init__(self, *args, **kwargs):
+        tenant = kwargs.pop('tenant', None)
+        super(GroupEditForm, self).__init__(*args, **kwargs)
+        if tenant:
+            # Limit the teachers to those in the current tenant
+            self.fields['teacher'].queryset = Teacher.objects.filter(tenant=tenant)

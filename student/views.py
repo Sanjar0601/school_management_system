@@ -143,10 +143,10 @@ def group_list(request):
             )
     else:
         students_in_group = Group.objects.none()  # No groups if no tenant or user is not assigned properly
-
-    context = {'groups': students_in_group}
+    teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
+    days = Group.day_choices
+    context = {'groups': students_in_group, 'teachers': teachers, 'days': days}
     return render(request, 'student/group-list.html', context)
-
 
 
 def student_list(request):
@@ -351,3 +351,22 @@ def attendance_table(request):
     }
 
     return render(request, 'student/attendance_list.html', context)
+
+
+@csrf_exempt
+def edit_group_view(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group_id')
+        group = get_object_or_404(Group, id=group_id)
+
+        # Update the group's attributes
+        group.name = request.POST.get('name')
+        group.teacher_id = request.POST.get('teacher')
+        group.day = request.POST.get('day')
+        group.time = request.POST.get('time')
+
+        group.save()
+
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
