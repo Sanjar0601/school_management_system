@@ -145,7 +145,8 @@ def group_list(request):
         students_in_group = Group.objects.none()  # No groups if no tenant or user is not assigned properly
     teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
     days = Group.day_choices
-    context = {'groups': students_in_group, 'teachers': teachers, 'days': days}
+    context = {'groups': students_in_group, 'teachers': teachers, 'days': days,         'tenant_user': tenant_user,
+}
     return render(request, 'student/group-list.html', context)
 
 

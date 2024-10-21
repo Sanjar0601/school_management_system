@@ -1,6 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
-
+{% load tenant_tags %}
+{% has_teacher_profile as profile_exists %}
 {% block content %}
 
 <div class="animated fadeIn">
@@ -58,7 +59,9 @@
                                             <th>Status</th>
                                             <th>Date</th>
                                             <th>Enrollment</th>
+                                            {% if not tenant_user.teacher_profile %}
                                             <th>Actions</th>
+                                            {% endif %}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -74,6 +77,7 @@
                                             <td>{{ group.day }}</td>
                                             <td>{{ group.time }}</td>
                                             <td>{{ group.group_count }}</td>
+                                            {% if not tenant_user.teacher_profile %}
                                             <td> <a class="btn btn-info edit-group-btn" href="#"
                                                    data-group-id="{{ group.id }}"
                                                    data-group-name="{{ group.name }}"
@@ -84,6 +88,7 @@
                                                    data-target="#editGroupModal">
                                                     <i class="fa fa-edit"></i> Edit
                                                 </a></td>
+                                            {% endif %}
                                         </tr>
                                         {% endfor %}
                                     </tbody>
