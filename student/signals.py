@@ -17,18 +17,18 @@ def set_tenant(sender, instance, **kwargs):
         except TenantUser.DoesNotExist:
             instance.tenant = None  # or handle accordingly
 
-
-@receiver(post_save, sender=PersonalInfo)
-def deduct_balance(sender, instance, created, **kwargs):
-    if not created:
-        # Convert first_lesson_day to date if it's passed as a string
-        if isinstance(instance.first_lesson_day, str):
-            instance.first_lesson_day = datetime.datetime.strptime(instance.first_lesson_day, "%Y-%m-%d").date()
-        if instance.balance and isinstance(instance.balance, str):
-            instance.balance = int(instance.balance)
-        if instance.first_lesson_day:
-            today = now().date()
-            deduction_day = instance.first_lesson_day + timedelta(days=30)
-            if today >= deduction_day:
-                instance.balance -= 599000
-                PersonalInfo.objects.filter(pk=instance.pk).update(balance=instance.balance)
+#
+# @receiver(post_save, sender=PersonalInfo)
+# def deduct_balance(sender, instance, created, **kwargs):
+#     if not created:
+#         # Convert first_lesson_day to date if it's passed as a string
+#         if isinstance(instance.first_lesson_day, str):
+#             instance.first_lesson_day = datetime.datetime.strptime(instance.first_lesson_day, "%Y-%m-%d").date()
+#         if instance.balance and isinstance(instance.balance, str):
+#             instance.balance = int(instance.balance)
+#         if instance.first_lesson_day:
+#             today = now().date()
+#             deduction_day = instance.first_lesson_day + timedelta(days=30)
+#             if today >= deduction_day:
+#                 instance.balance -= 599000
+#                 PersonalInfo.objects.filter(pk=instance.pk).update(balance=instance.balance)
