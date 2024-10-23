@@ -45,6 +45,29 @@
         .btn-primary {
             width: 100%; /* Make the login button full-width */
         }
+
+        /* Styles for the eye icon inside the input */
+        .password-container {
+            position: relative;
+        }
+        .password-container .fa-eye,
+        .password-container .fa-eye-slash {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 10; /* Ensure the icon stays above other elements */
+        }
+        /* Ensure input padding doesn't overlap the icon */
+        .password-container input {
+            padding-right: 45px;
+        }
+        /* Hover fix */
+        .password-container .fa-eye:hover,
+        .password-container .fa-eye-slash:hover {
+            color: #007bff; /* Optional: Change the color on hover */
+        }
     </style>
 </head>
 <body class="app flex-row align-items-center" style="background-image: url('{% static "src/img/login_page.png" %}'); background-size: cover; background-position: center;">
@@ -67,21 +90,24 @@
                                     </div>
                                     <input type="text" name="username" class="form-control" placeholder="Username" required>
                                 </div>
-                                <!-- Password Field -->
-                                <div class="input-group mb-3">
+
+                                <!-- Password Field with Eye Icon inside the input -->
+                                <div class="input-group mb-3 password-container">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">
                                             <i class="icon-lock"></i>
                                         </span>
                                     </div>
                                     <input type="password"
+                                           id="password"
                                            name="password"
                                            class="form-control"
                                            placeholder="Password"
                                            required>
-
-
+                                    <!-- Eye icon positioned inside the input -->
+                                    <i id="togglePassword" class="fa fa-eye-slash"></i>
                                 </div>
+
                                 <!-- Button -->
                                 <div class="btn-container">
                                     <input type="submit" value="Login" class="btn btn-primary px-4" />
@@ -89,11 +115,25 @@
                             </form>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- JavaScript to Toggle Password Visibility -->
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function (e) {
+            // Toggle the type attribute
+            const passwordField = document.getElementById('password');
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+
+            // Toggle the eye slash icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
+
     <!-- CoreUI and necessary plugins-->
     {% include 'base/js.html' %}
 </body>
