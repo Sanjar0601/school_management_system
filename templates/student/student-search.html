@@ -169,7 +169,6 @@
                                                     data-goal="{{ student.goal }}"
                                                     data-language="{{ student.language }}"
                                                     data-test="{{ student.test }}"
-                                                    data-balance="{{ student.balance }}"
                                                     data-first_lesson_day="{{ student.first_lesson_day|date:'Y-m-d' }}"
                                                     data-name="{{ student.name }}">
                                                 Edit
@@ -297,10 +296,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="editBalance">Balance</label>
-                        <input type="number" name="balance" id="editBalance" class="form-control" step="0.01">
-                    </div>
+
                     <div class="form-group">
                         <label for="editFirstLessonDay">First Lesson Date</label>
                         <input type="date" name="first_lesson_day" id="editFirstLessonDay" class="form-control">
@@ -326,7 +322,6 @@ $(document).ready(function() {
         var status = button.data('status');
         var group = button.data('group');
         var teacher = button.data('teacher');
-        var balance = button.data('balance'); // New data attributes
         var firstLessonDay = button.data('first_lesson_day');// New data attributes
         var source = button.data('source');
         var comment = button.data('comment');
@@ -346,7 +341,6 @@ $(document).ready(function() {
         modal.find('#editStatus').val(status);
         modal.find('#editGroup').val(group);
         modal.find('#editTeacher').val(teacher);
-        modal.find('#editBalance').val(balance); // Set the balance value
         modal.find('#editFirstLessonDay').val(firstLessonDay);
         modal.find('#editSource').val(source);
         modal.find('#editName').val(name);
