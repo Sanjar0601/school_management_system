@@ -4,7 +4,7 @@ import threading
 from teacher.models import PersonalInfo as Teacher
 from django.contrib.auth.models import User
 from account.models import Tenant, TenantAwareManager
-
+from django.utils import timezone
 
 class Group(models.Model):
     name = models.CharField(max_length=100)
@@ -21,6 +21,21 @@ class Group(models.Model):
     def __str__(self):
         return f'{self.name} | {self.teacher} | {self.day} | {self.time}'
 
+
+class Balance(models.Model):
+    student = models.ForeignKey('PersonalInfo', on_delete=models.CASCADE, related_name='transactions')
+    last_transaction_date = models.DateTimeField(default=timezone.now)
+    amount = models.IntegerField(default=-599000)
+    type_choices = (
+        ('Payment', 'Payment'),
+        ('Deduction', 'Deduction'),
+    )
+    transaction_type = models.CharField(choices=type_choices, max_length=10)
+    description = models.CharField(max_length=200, null=True, blank=True)
+    auth_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f'{self.student} | {self.last_transaction_date}'
 
 class PersonalInfo(models.Model):
     name = models.CharField(max_length=100)
@@ -53,10 +68,9 @@ class PersonalInfo(models.Model):
     first_lesson_day = models.DateField(null=True)
     first_come_day = models.DateField(blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    balance = models.IntegerField(null=True, blank=True, default=-599000)
+    balance = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, null=True, blank=True)
     learning_duration = models.CharField(max_length=100, null=True, blank=True)
-    last_deduction = models.DateField(null=True, blank=True)
     objects = TenantAwareManager()
     test = models.CharField(max_length=100, null=True, blank=True)
     languages = (
@@ -69,6 +83,11 @@ class PersonalInfo(models.Model):
 
     def __str__(self):
         return self.name
+
+    def update_balance(self):
+        total_balance = self.transactions.aggregate(total=models.Sum('amount'))['total'] or 0
+        self.balance = total_balance
+        self.save()
 
 
 class Attendance(models.Model):
@@ -91,3 +110,14 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student.name} - {self.date} - {self.status}"
+
+
+class Expense(models.Model):
+    balance = models.ForeignKey(Balance, related_name='expenses', null=True, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
+    comment = models.CharField(max_length=200)  # Reason for the expense
+    amount_spent = models.IntegerField()
+    auth_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f"{self.comment} - {self.amount_spent}"

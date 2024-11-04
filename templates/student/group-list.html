@@ -152,11 +152,12 @@
                         <tbody id="studentList">
                         </tbody>
                     </table>
-                    <button type="button" class="btn btn-primary" id="submitAttendance">Submit</button>
                 </form>
 
             </div>
             <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" id="submitAttendance">Submit</button>
+
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -165,7 +166,7 @@
 
 <!-- Edit Group Modal -->
 <div class="modal fade" id="editGroupModal" tabindex="-1" role="dialog" aria-labelledby="editGroupModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document"> <!-- Ensure modal-xl is here -->
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editGroupModalLabel">Edit Group</h5>
@@ -177,44 +178,45 @@
                 <form id="editGroupForm">
                     {% csrf_token %}
                     <input type="hidden" name="group_id" id="editGroupId">
-                    <div class="form-group">
-                        <label for="editGroupName">Group Name</label>
-                        <input type="text" class="form-control" id="editGroupName" name="name">
+                    <div class="row">
+                        <div class="col">
+                            <label for="editGroupName">Group Name</label>
+                            <input type="text" class="form-control" id="editGroupName" name="name">
+                        </div>
+
+                        <!-- Select field for Teacher -->
+                        <div class="col">
+                            <label for="editGroupTeacher">Teacher</label>
+                            <select class="form-control" id="editGroupTeacher" name="teacher">
+                                {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Select field for Day -->
+                        <div class="col">
+                            <label for="editGroupDay">Day</label>
+                            <select class="form-control" id="editGroupDay" name="day">
+                                {% for value, label in days %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col">
+                            <label for="editGroupTime">Time</label>
+                            <input type="text" class="form-control" id="editGroupTime" name="time">
+                        </div>
                     </div>
 
-                    <!-- Select field for Teacher -->
-                    <div class="form-group">
-                        <label for="editGroupTeacher">Teacher</label>
-                        <select class="form-control" id="editGroupTeacher" name="teacher">
-                            {% for teacher in teachers %}
-                                <option value="{{ teacher.id }}">{{ teacher.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
 
-                    <!-- Select field for Day -->
-                    <div class="form-group">
-                        <label for="editGroupDay">Day</label>
-                        <select class="form-control" id="editGroupDay" name="day">
-                            {% for value, label in days %}
-                            <option value="{{ value }}">{{label}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editGroupTime">Time</label>
-                        <input type="text" class="form-control" id="editGroupTime" name="time">
-                    </div>
-
-
-                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="submit" class="btn btn-success btn-sm mt-3" style='border-radius: 10px;'>Save changes</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -339,7 +341,6 @@ $(document).ready(function() {
         var url = '/group/' + groupId + '/edit/';
         var formData = $(this).serialize();
         $.ajax({
-            url: '{% url "edit_group" %}',
             method: 'POST',
             data: formData,
             headers: {

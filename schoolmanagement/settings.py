@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+
 from .juzmin import JAZZMIN_SETTINGS
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -48,7 +49,10 @@ INSTALLED_APPS = [
     'redis',
     'whitenoise.runserver_nostatic',
     'dj_database_url',
-    'environ'
+    'environ',
+    'django_crontab',
+    'background_task',
+    'django_celery_results',
  ]
 
 MIDDLEWARE = [
@@ -161,6 +165,8 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or your Redis/RabbitMQ URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERY_RESULT_BACKEND = 'django-db'  # Or your Redis server URL
+CELERY_RESULT_EXTENDED = True
 
 # Redis cache configuration
 CACHES = {
@@ -181,3 +187,6 @@ CACHES = {
 CACHES['default'] = CACHES['redis']
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+CRONJOBS = [
+    ('*/10 * * * *', 'student.tasks,deduct_balance', '/tmp/django_cron.log')
+]

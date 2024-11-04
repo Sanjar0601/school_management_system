@@ -11,3 +11,5 @@ class GroupAdmin(admin.ModelAdmin):
 admin.site.register(PersonalInfo)
 admin.site.register(Attendance)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(Balance)
+admin.site.register(Expense)

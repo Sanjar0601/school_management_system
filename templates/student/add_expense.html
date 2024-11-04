@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block content %}
+  <div class="card">
+    <div class="card-header">Expense Registration Form</div>
+    <div class="card-body">
+      <form class="form-control" action="" style="border:none;" method="post" enctype="multipart/form-data" id="ExpenseRegistrationForm">
+
+        <div class="group_info">
+          <div class="card">
+            <div class="card-header">Group Information</div>
+            <div class="card-body">
+              {% csrf_token %}
+              {{ form.as_p}}
+              <button id="submit" type="submit" class="btn btn-primary rounded-pill pull-right"  style="padding: 10px 20px;">Submit</button>
+
+            </div>
+
+
+          </div>
+        </div>
+
+        </div>
+    </form>
+  </div>
+  </div>
+{% endblock %}

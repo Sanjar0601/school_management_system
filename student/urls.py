@@ -13,5 +13,7 @@ urlpatterns = [
     path('student/save-attendance/', views.SaveAttendanceView.as_view(), name='save-attendance'),
     path('attendace_report', views.attendance_table, name='report'),
     path('group/edit/', views.edit_group_view, name='edit_group'),
+    path('balance_update', views.balance_update, name='balance_update'),
+    path('expenses/add/', views.add_expense_view, name='add_expense'),
 
 ]

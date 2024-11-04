@@ -11,49 +11,52 @@
             <h2>Search Student</h2>
         </div>
         <form method="GET" action=".">
-            <!-- Name Filter -->
             <div class="form-row mx-2 mt-3 align-items-end"> <!-- First row: Name, Status, Group -->
-    <div class="form-group col-md-4"> <!-- Name field -->
-        <label for="name_contains">Name</label>
-        <div class="input-group">
-            <input class="form-control py-1.5 border-right-10 border" type="search" name="name_contains" id="name_contains" placeholder="Name...">
-        </div>
-    </div>
+                <div class="form-group col-md-4"> <!-- Name field -->
+                    <label for="name_contains">Name</label>
+                    <div class="input-group">
+                        <input class="form-control py-1.5 border-right-10 border" type="search" name="name_contains" id="name_contains" placeholder="Name...">
+                    </div>
+                </div>
+                <div class="form-group col-md-4"> <!-- Status field -->
+                    <label for="status_contains">Status</label>
+                    <select name="status_contains" id="status_contains" class="form-control">
+                        <option value="">Choose...</option>
+                        {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if value == request.GET.status_contains %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-md-4"> <!-- Group field -->
+                    <label for="group_contains">Group</label>
+                    <select name="group_contains" id="group_contains" class="form-control">
+                        <option value="">Choose...</option>
+                        {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }} | {{ group.teacher.name }} | {{ group.day }} | {{ group.time }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                    <div class="form-group col-md-4"> <!-- Balance field -->
+                        <label for="balance_filter">Balance</label>
+                        <select name="balance_filter" id="balance_filter" class="form-control">
+                            <option value="">Choose...</option>
+                            <option value="positive" {% if request.GET.balance_filter == 'positive' %}selected{% endif %}>Positive</option>
+                            <option value="negative" {% if request.GET.balance_filter == 'negative' %}selected{% endif %}>Negative</option>
+                        </select>
+                    </div>
 
-    <div class="form-group col-md-4"> <!-- Status field -->
-        <label for="status_contains">Status</label>
-        <select name="status_contains" id="status_contains" class="form-control">
-            <option value="">Choose...</option>
-            {% for value, label in statuses %}
-            <option value="{{ value }}" {% if value == request.GET.status_contains %}selected{% endif %}>
-                {{ label }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
 
-    <div class="form-group col-md-4"> <!-- Group field -->
-        <label for="group_contains">Group</label>
-        <select name="group_contains" id="group_contains" class="form-control">
-            <option value="">Choose...</option>
-            {% for group in groups %}
-            <option value="{{ group.id }}">{{ group.name }} | {{ group.teacher.name }} | {{ group.day }} | {{ group.time }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-<div class="form-row mx-2 mt-1"> <!-- Second row: Start Date, End Date -->
-    <div class="form-group col-md-5"> <!-- Start Date field -->
-        <label for="start_date">Start Date</label>
-        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
-    </div>
-
-    <div class="form-group col-md-5"> <!-- End Date field -->
-        <label for="end_date">End Date</label>
-        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
-    </div>
-</div>
-</div>
+                    <div class="form-group col-md-4"> <!-- Start Date field -->
+                        <label for="start_date">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                    </div>
+                    <div class="form-group col-md-4"> <!-- End Date field -->
+                        <label for="end_date">End Date</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                    </div>
+                            </div>
 
 
 
@@ -92,9 +95,13 @@
                                     <th>Teacher</th>
                                     <th>Comment</th>
                                     <th>Phone</th>
+                                    {% if not tenant_user.teacher_profile %}
                                     <th>Balance</th>
+                                    {% endif %}
                                     <th>Status</th>
+                                    {% if not tenant_user.teacher_profile %}
                                     <th>Actions</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -106,17 +113,18 @@
                                         <td>{{ student.teacher }}</td>
                                         <td>{{student.comment}}</td>
                                         <td>{{student.phone_no}}</td>
+                                        {% if not tenant_user.teacher_profile %}
                                         <td>
-                                            <span style="{% if student.balance < 0%}
-                                                            color:red;
-                                                           {% else %}
-                                                            color:green
-                                                            {% endif%}">
+                                            <button type="button" data-balance="{{student.balance}}" data-student-id="{{student.id}}"
+                                                    class="{% if student.balance > 0 %} btn btn-outline-success {% else %} btn-outline-danger {% endif %}" data-toggle="modal" data-target="#editBalanceModal" >
                                                 {{student.balance}}
-                                            </span>
+                                            </button>
                                         </td>
+                                        {% endif %}
                                         <td>
                                             <span style="
+
+
                 {% if student.status == 'Unpaid' %}
                     background-color: red;
                     color: black;
@@ -146,8 +154,9 @@
                 {{ student.status }}
             </span>
                                         </td>
+                                                                                    {% if not tenant_user.teacher_profile %}
+
                                         <td>
-                                            {% if not tenant_user.teacher_profile %}
 
                                             <button class="btn btn-sm btn-warning edit-btn" data-toggle="modal" data-target="#editModal"
                                                     data-student-id="{{ student.id }}"
@@ -178,6 +187,35 @@
         </div>
     </div>
 </div>
+
+
+    <div class="modal fade" id="editBalanceModal" tabindex="-1" role="dialog" aria-labelledby="editBalanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBalanceModalLabel">Edit Balance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editBalanceForm">
+                    <input type="hidden" name="student_id" id="editStudent">
+                    <div class="form-group">
+                        <label for="editAmount">Amount</label>
+                        <input type="number" name="amount" id="editAmount" class="form-control">
+                    </div>
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveBalanceBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+        </div>
+
 
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -276,8 +314,8 @@
             </div>
         </div>
     </div>
-</div>
 
+<!--    Edit Balance Modal-->
 <!-- JavaScript to handle modal and AJAX request -->
 <script>
 $(document).ready(function() {
@@ -354,6 +392,39 @@ $(document).ready(function() {
         });
     });
 });
+$(document).ready(function() {
+    $('#editBalanceModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var studentId = button.data('student-id');
+        var balance = button.data('balance');
+
+        var modal = $(this);
+        modal.find('#editStudent').val(studentId);
+        modal.find('#editAmount').val(balance);
+    });
+
+    $('#saveBalanceBtn').click(function() {
+        var form = $('#editBalanceForm');
+        $.ajax({
+            type: 'POST',
+            url: '{% url "balance_update" %}',  // Replace with actual URL in urls.py
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    $('#editBalanceModal').modal('hide');
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Failed to update balance.');
+                }
+            },
+            error: function() {
+                alert('An error occurred while updating the balance.');
+            }
+        });
+    });
+});
+
 </script>
 
 {% endblock %}
+</div>

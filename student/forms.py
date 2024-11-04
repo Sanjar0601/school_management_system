@@ -123,3 +123,18 @@ class GroupEditForm(forms.ModelForm):
         if tenant:
             # Limit the teachers to those in the current tenant
             self.fields['teacher'].queryset = Teacher.objects.filter(tenant=tenant)
+
+
+class AddBalanceForm(forms.Form):
+    amount = forms.IntegerField(label='Amount', min_value=1)
+    description = forms.CharField(label='Description', max_length=200, required=False)
+
+
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = ['amount_spent', 'comment']
+        widgets = {
+            'amount_spent': forms.NumberInput(attrs={'class': 'form-control', 'type': 'number'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }

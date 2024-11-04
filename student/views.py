@@ -17,7 +17,7 @@ from django.utils.dateparse import parse_date
 from collections import defaultdict
 from django.utils.timezone import now
 from account.models import TenantUser
-
+from django.contrib import messages
 
 @csrf_exempt
 def student_update(request):
@@ -141,11 +141,18 @@ def group_list(request):
             ).annotate(
                 group_count=Count('students', filter=Q(students__status='Paid'))
             )
+
     else:
         students_in_group = Group.objects.none()  # No groups if no tenant or user is not assigned properly
     teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
     days = Group.day_choices
-    context = {'groups': students_in_group, 'teachers': teachers, 'days': days,         'tenant_user': tenant_user,
+    group_id = request.POST.get('group_id')
+    edit_group_students = PersonalInfo.objects.filter(group=group_id, tenant=tenant, status='Paid')
+    context = {'groups': students_in_group,
+               'teachers': teachers,
+               'days': days,
+               'tenant_user': tenant_user,
+               'edit_students': edit_group_students,
 }
     return render(request, 'student/group-list.html', context)
 
@@ -201,6 +208,7 @@ def BootStrapFilterView(request):
     group_contains_query = request.GET.get('group_contains')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    balance_filter = request.GET.get('balance_filter')
 
     if name_contains_query:
         qs = qs.filter(name__icontains=name_contains_query)
@@ -208,6 +216,11 @@ def BootStrapFilterView(request):
         qs = qs.filter(status__iexact=status_contains_query)
     if group_contains_query:
         qs = qs.filter(group__id=group_contains_query)
+    if balance_filter == 'positive':
+        qs = qs.filter(balance__gt=0)
+    elif balance_filter == 'negative':
+        qs = qs.filter(balance__lte=0)
+
 
     def convert_date(date_str):
         return datetime.strptime(date_str, '%d-%m-%Y').date()
@@ -232,6 +245,7 @@ def BootStrapFilterView(request):
         qs = qs.filter(first_lesson_day=end_date)
     elif start_date and end_date:
         qs = qs.filter(first_lesson_day__range=[start_date, end_date])
+
 
     context = {
         'queryset': qs,
@@ -366,8 +380,47 @@ def edit_group_view(request):
         group.day = request.POST.get('day')
         group.time = request.POST.get('time')
 
+
         group.save()
+        students_to_remove = request.POST.getlist('remove_students')
+        if students_to_remove:
+            PersonalInfo.objects.filter(id__in=students_to_remove, group=group).update(group=None)
+
 
         return JsonResponse({'status': 'success'})
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+@csrf_exempt
+def balance_update(request):
+    if request.method == "POST":
+        student_id = request.POST.get("student_id")
+        amount = request.POST.get("amount")
+
+        try:
+            student = PersonalInfo.objects.get(id=student_id)
+
+            balance = Balance.objects.get(student_id=student)
+            balance.auth_user = request.user  # Set the updating user
+            balance.amount += int(amount)
+            balance.save()
+            return JsonResponse({"success": True})
+        except Balance.DoesNotExist:
+            student = PersonalInfo.objects.get(id=student_id)
+            Balance.objects.create(student=student,
+                                             amount=amount)
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+
+
+def add_expense_view(request):
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Expense added successfully!')
+            return redirect('add_expense')
+    else:
+        form = ExpenseForm()  # Initialize an empty form for GET requests
+
+    return render(request, 'student/add_expense.html', {'form': form})
