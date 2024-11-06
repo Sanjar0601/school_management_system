@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django_celery_results',
  ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -65,10 +66,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'student.tenant_middleware.TenantMiddleware',
-
 ]
 
+
 ROOT_URLCONF = 'schoolmanagement.urls'
+
 
 TEMPLATES = [
     {
@@ -86,6 +88,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'schoolmanagement.wsgi.application'
 

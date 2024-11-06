@@ -1,8 +1,5 @@
-from celery import shared_task
-from .models import Balance
+from background_task import background
 
-@shared_task
-def deduct_balance():
-    for i in range(0,10):
-        print(f'Hello {i}')
-    return 'Task complete'
+@background(schedule=60)
+def my_scheduled_task():
+    print("Executing scheduled task now")

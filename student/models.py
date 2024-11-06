@@ -119,5 +119,7 @@ class Expense(models.Model):
     amount_spent = models.IntegerField()
     auth_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
+
+
     def __str__(self):
         return f"{self.comment} - {self.amount_spent}"

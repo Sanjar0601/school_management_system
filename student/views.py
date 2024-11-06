@@ -1,4 +1,3 @@
-import threading
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from .models import *
@@ -410,7 +409,6 @@ def balance_update(request):
             Balance.objects.create(student=student,
                                              amount=amount)
     return JsonResponse({"success": False, "error": "Invalid request method."})
-
 
 
 def add_expense_view(request):

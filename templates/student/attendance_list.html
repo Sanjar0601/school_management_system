@@ -18,7 +18,7 @@
                                 <option value="">All Groups</option>
                                 {% for group in groups %}
                                 <option value="{{ group.id }}">
-                                    {{ group.name }}
+                                    {{ group.name }} | {{group.teacher}} | {{group.day}} | {{group.time}}
                                 </option>
                                 {% endfor %}
                             </select>

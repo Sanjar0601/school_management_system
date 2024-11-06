@@ -61,9 +61,12 @@
 
 
             <!-- Submit Button -->
-            <div class="form-row mx-3 mt-2" > <!-- Add horizontal margin to create space on the sides -->
+            <div class="form-row mx-3 mt-2 d-flex align-items-center" > <!-- Add horizontal margin to create space on the sides -->
                 <div class="form-group col-md-1"> <!-- Align the button with previous fields -->
                     <button type="submit" class="btn btn-primary w-100">Search</button> <!-- w-100 ensures the button takes full width of the column -->
+                </div>
+                <div class="ml-3">
+                    <strong><p class="mb-3" style="font:bold;">Total: {{queryset.count}}</p></strong>
                 </div>
             </div>
         </form>
@@ -116,7 +119,7 @@
                                         {% if not tenant_user.teacher_profile %}
                                         <td>
                                             <button type="button" data-balance="{{student.balance}}" data-student-id="{{student.id}}"
-                                                    class="{% if student.balance > 0 %} btn btn-outline-success {% else %} btn-outline-danger {% endif %}" data-toggle="modal" data-target="#editBalanceModal" >
+                                                    class="{% if student.balance >= 0 %} btn btn-outline-success {% else %} btn-outline-danger {% endif %}" data-toggle="modal" data-target="#editBalanceModal" >
                                                 {{student.balance}}
                                             </button>
                                         </td>
