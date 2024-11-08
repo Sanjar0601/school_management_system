@@ -49,6 +49,7 @@ class PersonalInfo(models.Model):
         ('Wrong Number', 'Wrong Number'),
         ('Deposit', 'Deposit'),
         ('Deleted', 'Deleted'),
+        ('Frozen', 'Frozen')
 
 
     )
