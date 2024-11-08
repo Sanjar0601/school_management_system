@@ -216,9 +216,9 @@ def BootStrapFilterView(request):
     if group_contains_query:
         qs = qs.filter(group__id=group_contains_query)
     if balance_filter == 'positive':
-        qs = qs.filter(balance__gt=0)
+        qs = qs.filter(balance__gte=0)
     elif balance_filter == 'negative':
-        qs = qs.filter(balance__lte=0)
+        qs = qs.filter(balance__lt=0)
 
 
     def convert_date(date_str):
