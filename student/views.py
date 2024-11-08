@@ -378,8 +378,6 @@ def edit_group_view(request):
         group.teacher_id = request.POST.get('teacher')
         group.day = request.POST.get('day')
         group.time = request.POST.get('time')
-
-
         group.save()
         students_to_remove = request.POST.getlist('remove_students')
         if students_to_remove:

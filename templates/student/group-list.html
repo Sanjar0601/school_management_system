@@ -211,7 +211,7 @@
                     </div>
 
 
-                    <button type="submit" class="btn btn-success btn-sm mt-3" style='border-radius: 10px;'>Save changes</button>
+                    <button type="submit" class="btn btn-success btn-sm mt-3" id="saveGroupBtn" style='border-radius: 10px;'>Save changes</button>
                 </form>
             </div>
         </div>
@@ -338,16 +338,19 @@ $(document).ready(function() {
     $('#editGroupForm').on('submit', function(event) {
         event.preventDefault();
         var groupId = $('#editGroupId').val();  // Get group ID from hidden field
-        var url = '/group/' + groupId + '/edit/';
         var formData = $(this).serialize();
+
         $.ajax({
+            url: '{% url "edit_group" %}',
             method: 'POST',
             data: formData,
             headers: {
                 'X-CSRFToken': csrfToken
             },
             success: function(response) {
-                location.reload();
+                console.log('Successfully updated group');
+                // Optionally, update the DOM instead of reloading the page
+                location.reload();  // If you prefer a full page reload
             },
             error: function(xhr, status, error) {
                 console.error('Error updating group:', status, error);
