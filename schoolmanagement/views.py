@@ -38,6 +38,10 @@ def home_page(request):
             # Otherwise, count all students and teachers in the tenant
             total_student = queryset.count()
             total_teacher = Teacher.objects.filter(tenant=tenant).count()
+    else:
+        queryset = PersonalInfo.objects.all()
+        total_student = queryset.count()
+        total_teacher = Teacher.objects.all().count()
 
     # Pass the counts to the context
     context = {
