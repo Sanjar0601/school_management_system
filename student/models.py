@@ -116,11 +116,24 @@ class Attendance(models.Model):
 class Expense(models.Model):
     balance = models.ForeignKey(Balance, related_name='expenses', null=True, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True, null=True)
-    comment = models.CharField(max_length=200)  # Reason for the expense
+    comment = models.CharField(max_length=200, blank=True)  # Reason for the expense
     amount_spent = models.IntegerField()
+    category = models.CharField(max_length=150, choices=[
+        ('Expense', 'Expense'),
+        ('Income', 'Income'),
+    ], blank=True)
+    types = models.CharField(max_length=150, choices=[
+        ('Humo', 'Humo'),
+        ('UzCard', 'UzCard'),
+        ('Click', 'Click'),
+        ('Perevod', 'Perevod'),
+        ('Others', 'Others')
+    ], blank=True)
     auth_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-
-
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"{self.comment} - {self.amount_spent}"
+
+
+

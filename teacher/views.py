@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Count
 from . import forms
 from .models import PersonalInfo
-from account.models import TenantUser
+from account.models import TenantUser, Tenant
 # Create your views here.
 
 
@@ -25,16 +25,27 @@ def teacher_registration(request):
 def teacher_list(request):
     tenant = getattr(request, 'tenant', None)
 
-    # Ensure tenant filtering is applied
+    # Base queryset for teachers
     if tenant is not None:
-        # Filter by tenant and count related groups (adjust 'groups' to the correct related field name)
-        teacher = PersonalInfo.objects.filter(tenant=tenant).annotate(group_count=Count('groups'))
+        # Filter by tenant and count related groups
+        teachers = PersonalInfo.objects.filter(tenant=tenant).annotate(group_count=Count('groups'))
     else:
-        teacher = PersonalInfo.objects.filter(tenant=tenant).annotate(group_count=Count('groups'))
+        teachers = PersonalInfo.objects.all().annotate(group_count=Count('groups'))
 
-    context = {'teachers': teacher}
+    # Get all tenants for the filter dropdown
+    tenants = Tenant.objects.all()
+
+    # Apply tenant_filter if provided in GET request
+    tenant_filter = request.GET.get('tenant_filter')
+    if tenant_filter:
+        teachers = teachers.filter(tenant_id=tenant_filter)
+
+    # Context data for rendering the template
+    context = {
+        'teachers': teachers,
+        'tenants': tenants,
+    }
     return render(request, 'teacher/teacher-list.html', context)
-
 
 def teacher_profile(request, teacher_id):
     teacher = PersonalInfo.objects.get(id=teacher_id)

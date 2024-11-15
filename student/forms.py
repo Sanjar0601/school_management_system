@@ -133,7 +133,7 @@ class AddBalanceForm(forms.Form):
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ['amount_spent', 'comment']
+        fields = ['amount_spent', 'comment', 'category', 'types']
         widgets = {
             'amount_spent': forms.NumberInput(attrs={'class': 'form-control', 'type': 'number'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),

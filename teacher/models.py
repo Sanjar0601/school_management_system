@@ -10,6 +10,6 @@ class PersonalInfo(models.Model):
     tenant = models.ForeignKey('account.Tenant', on_delete=models.SET_NULL, null=True, related_name='tenants')
 
     def __str__(self):
-        return self.name
+        return f'{self.name}  |  {self.tenant}'
 
 

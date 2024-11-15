@@ -81,6 +81,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'student.context_processors.is_teacher',
+                'student.context_processors.add_superadmin_status',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',

@@ -118,6 +118,7 @@ def group_registration(request):
     return render(request, 'student/group_form.html', context)
 
 
+
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
 
@@ -133,6 +134,7 @@ def group_list(request):
             ).annotate(
                 group_count=Count('students', filter=Q(students__status='Paid'))
             )
+            teachers = Teacher.objects.filter(id=tenant_user.teacher_profile.id)  # Only the teacher themselves
         else:
             # Admin can see all groups within the tenant
             students_in_group = Group.objects.filter(
@@ -140,19 +142,31 @@ def group_list(request):
             ).annotate(
                 group_count=Count('students', filter=Q(students__status='Paid'))
             )
-
+            teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
     else:
-        students_in_group = Group.objects.none()  # No groups if no tenant or user is not assigned properly
-    teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
+        # When no tenant is set, fetch all groups and teachers without tenant filtering
+        students_in_group = Group.objects.all().annotate(
+            group_count=Count('students', filter=Q(students__status='Paid')))
+        teachers = Teacher.objects.all()
+
+    tenant_filter = request.GET.get('tenant_filter')
+    if tenant_filter:
+        students_in_group = Group.objects.filter(tenant=tenant_filter).annotate(
+            group_count=Count('students', filter=Q(students__status='Paid')))
+    tenants = Tenant.objects.all()
     days = Group.day_choices
     group_id = request.POST.get('group_id')
     edit_group_students = PersonalInfo.objects.filter(group=group_id, tenant=tenant, status='Paid')
-    context = {'groups': students_in_group,
-               'teachers': teachers,
-               'days': days,
-               'tenant_user': tenant_user,
-               'edit_students': edit_group_students,
-}
+
+    context = {
+        'tenants': tenants,
+        'groups': students_in_group,
+        'teachers': teachers,
+        'days': days,
+        'tenant_user': tenant_user,
+        'edit_students': edit_group_students,
+    }
+
     return render(request, 'student/group-list.html', context)
 
 
@@ -190,7 +204,7 @@ def BootStrapFilterView(request):
             else:
                 qs = PersonalInfo.objects.filter(tenant=tenant)
         else:
-            qs = PersonalInfo.objects.none()
+            qs = PersonalInfo.objects.all()
             print('No tenant')# No data if no tenant is found
         group = Group.objects.filter(tenant=tenant)  # Filter groups by tenant
         teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
@@ -198,6 +212,7 @@ def BootStrapFilterView(request):
         qs = PersonalInfo.objects.none()  # No data for unauthenticated users
         group = []
         teachers = []
+    tenants = Tenant.objects.all()
     # Add filtering logic based on GET parameters
     status_choices = PersonalInfo.status_choices
     language_choices = PersonalInfo.languages
@@ -208,6 +223,7 @@ def BootStrapFilterView(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     balance_filter = request.GET.get('balance_filter')
+    tenant_filter = request.GET.get('tenant_filter')
 
     if name_contains_query:
         qs = qs.filter(name__icontains=name_contains_query)
@@ -219,6 +235,8 @@ def BootStrapFilterView(request):
         qs = qs.filter(balance__gte=0)
     elif balance_filter == 'negative':
         qs = qs.filter(balance__lt=0)
+    if tenant_filter:
+        qs = qs.filter(tenant_id=tenant_filter)
 
 
     def convert_date(date_str):
@@ -254,6 +272,7 @@ def BootStrapFilterView(request):
         'sources': source_choices,
         'languages': language_choices,
         'tenant_user': tenant_user,
+        'tenants': tenants
     }
     return render(request, 'student/student-search.html', context)
 
@@ -410,13 +429,86 @@ def balance_update(request):
 
 
 def add_expense_view(request):
+    # Get the tenant associated with the current logged-in user
+    tenant = getattr(request.user, 'tenant', None)  # Assuming user has a related 'tenant' field or model
+
+    if tenant is None:
+        print(messages.error(request, 'No tenant found for this user.'))
+
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
         if form.is_valid():
-            form.save()
+            expense = form.save(commit=False)  # Don't save yet, as we need to assign the tenant
+            expense.tenant = tenant  # Assign the tenant here
+            expense.save()  # Save the expense after assigning the tenant
             messages.success(request, 'Expense added successfully!')
-            return redirect('add_expense')
+            return redirect('add_expense')  # Redirect back to the same page
+
     else:
         form = ExpenseForm()  # Initialize an empty form for GET requests
 
     return render(request, 'student/add_expense.html', {'form': form})
+
+
+class ExpenseListView(ListView):
+    model = Expense
+    template_name = 'student/expense_list.html'  # Adjust the template path if necessary
+    context_object_name = 'expenses'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        filtered = False
+
+        # Get filtering criteria from GET request parameters
+        category = self.request.GET.get('category')
+        types = self.request.GET.get('types')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        min_amount = self.request.GET.get('min_amount')
+        max_amount = self.request.GET.get('max_amount')
+
+        # Apply filters if parameters are provided
+        if category:
+            queryset = queryset.filter(category=category)
+            filtered = True
+
+        if types:
+            queryset = queryset.filter(types=types)
+            filtered = True
+
+        if start_date:
+            start_date_parsed = parse_date(start_date)
+            if start_date_parsed:
+                queryset = queryset.filter(timestamp__gte=start_date_parsed)
+                filtered = True
+
+        if end_date:
+            end_date_parsed = parse_date(end_date)
+            if end_date_parsed:
+                queryset = queryset.filter(timestamp__lte=end_date_parsed)
+                filtered = True
+
+        if min_amount:
+            queryset = queryset.filter(amount_spent__gte=min_amount)
+            filtered = True
+
+        if max_amount:
+            queryset = queryset.filter(amount_spent__lte=max_amount)
+            filtered = True
+
+        # Add success/failure messages based on filtering results
+        if filtered:
+            if queryset.exists():
+                messages.success(self.request, "Filter applied successfully!")
+            else:
+                messages.warning(self.request, "No results found for the applied filter.")
+        else:
+            messages.info(self.request, "No filter applied. Showing all expenses.")
+
+        return queryset
+
+
+
+
+
+

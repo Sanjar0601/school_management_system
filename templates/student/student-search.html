@@ -56,6 +56,19 @@
                         <label for="end_date">End Date</label>
                         <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
                     </div>
+                {% if is_superadmin %}
+                <div class="form-group col-md-4"> <!-- Status field -->
+                    <label for="tenant_filter">Filial</label>
+                    <select name="tenant_filter" id="tenant_filter" class="form-control">
+                        <option value="">Choose...</option>
+                        {% for tenant in tenants%}
+                        <option value="{{tenant.id}}">
+                            {{tenant.name}}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
                             </div>
 
 
@@ -98,7 +111,8 @@
                                     <th>Teacher</th>
                                     <th>Comment</th>
                                     <th>Phone</th>
-                                    {% if not tenant_user.teacher_profile %}
+                                    {% if not tenant_user.teacher_profile or request.user.is_superuser%}
+
                                     <th>Balance</th>
                                     {% endif %}
                                     <th>Status</th>

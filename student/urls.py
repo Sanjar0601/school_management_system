@@ -15,5 +15,6 @@ urlpatterns = [
     path('group/edit/', views.edit_group_view, name='edit_group'),
     path('balance_update', views.balance_update, name='balance_update'),
     path('expenses/add/', views.add_expense_view, name='add_expense'),
+    path('expense_list', views.ExpenseListView.as_view(), name='expense_list')
 
 ]
