@@ -13,21 +13,29 @@ def custom_login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+
+            # Handle superusers
+            if user.is_superuser:
+                return redirect('home')  # Redirect superusers to a specific page
+
             # Check if the user belongs to multiple tenants
             tenants = TenantUser.objects.filter(user=user)
-            if tenants.count() == 1:
-                # If only one tenant, automatically set it
-                request.tenant = tenants.first().tenant
-                return redirect('home')
-            elif tenants.count() > 1:
-                # If multiple tenants, prompt the user to select one
-                return redirect('select_tenant')
+            if tenants.exists():
+                if tenants.count() == 1:
+                    # If only one tenant, automatically set it
+                    request.tenant = tenants.first().tenant
+                    return redirect('home')
+                elif tenants.count() > 1:
+                    # If multiple tenants, prompt the user to select one
+                    return redirect('select_tenant')
+            else:
+                # Handle users with no tenants assigned
+                return render(request, 'administration/login.html', {
+                    'error': 'No tenant assigned to your account. Please contact support.'
+                })
         else:
-            print('no user')
             return render(request, 'administration/login.html', {'error': 'Invalid login'})
-    else:
-        return render(request, 'administration/login.html')
-
+    return render(request, 'administration/login.html')
 
 def admin_logout(request):
     logout(request)
