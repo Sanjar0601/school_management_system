@@ -203,16 +203,19 @@ def BootStrapFilterView(request):
                 qs = qs.filter(teacher=tenant_user.teacher_profile)
             else:
                 qs = PersonalInfo.objects.filter(tenant=tenant)
+            group = Group.objects.filter(tenant=tenant)  # Filter groups by tenant
         else:
-            qs = PersonalInfo.objects.all()
-            print('No tenant')# No data if no tenant is found
-        group = Group.objects.filter(tenant=tenant)  # Filter groups by tenant
-        teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
+            print('No tenant')
+            qs = PersonalInfo.objects.all()  # Fetch all records when no tenant
+            group = Group.objects.all()  # Fetch all groups when no tenant
+        teachers = Teacher.objects.filter(tenant=tenant) if tenant else Teacher.objects.all()
     else:
         qs = PersonalInfo.objects.none()  # No data for unauthenticated users
         group = []
         teachers = []
+
     tenants = Tenant.objects.all()
+
     # Add filtering logic based on GET parameters
     status_choices = PersonalInfo.status_choices
     language_choices = PersonalInfo.languages
@@ -238,7 +241,6 @@ def BootStrapFilterView(request):
     if tenant_filter:
         qs = qs.filter(tenant_id=tenant_filter)
 
-
     def convert_date(date_str):
         return datetime.strptime(date_str, '%d-%m-%Y').date()
 
@@ -262,7 +264,6 @@ def BootStrapFilterView(request):
         qs = qs.filter(first_lesson_day=end_date)
     elif start_date and end_date:
         qs = qs.filter(first_lesson_day__range=[start_date, end_date])
-
 
     context = {
         'queryset': qs,
