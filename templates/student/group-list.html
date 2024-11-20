@@ -65,11 +65,11 @@
                                         <tr role="row" class="odd">
                                             <td>{{ forloop.counter }}</td>
                                             <td>
-                                                <a href="#" class="group-details" data-group-id="{{ group.id }}" data-group-name="{{ group.name }}" data-teacher-name="{{ group.teacher }}" data-toggle="modal" data-target="#groupModal">
+                                                <a href="#" class="group-details" data-group-id="{{ group.id }}" data-group-name="{{ group.name }}" data-teacher-name="{{ group.teacher.name }}" data-toggle="modal" data-target="#groupModal">
                                                     {{ group.name }}
                                                 </a>
                                             </td>
-                                            <td>{{ group.teacher }}</td>
+                                            <td>{{ group.teacher.name }}</td>
                                             <td>{{ group.day }}</td>
                                             <td>{{ group.time }}</td>
                                             <td>{{ group.group_count }}</td>
@@ -124,8 +124,8 @@
     </div>
 </div>
 
-<div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade " id="groupModal" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="groupModalLabel">Group Students</h5>
@@ -137,7 +137,10 @@
                 <p id="teacherName" class="font-weight-bold"></p>
                 <p id="todayDate"></p>
                 <form id="attendanceForm"> {% csrf_token %} <table class="table table-striped">
-                        <input type="hidden" name="group" id="groupId" value="">
+                        <input type="hidden" name="group" id="groupId" value="" class="form-control">
+                    <label for="unit">Unit: </label>
+                    <input type="text" name="unit" id="unit" placeholder="Enter the Unit name" class="ml-2">
+
                         <thead>
                             <tr>
                                 <th>Name</th>

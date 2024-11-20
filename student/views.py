@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
+
 from .models import *
 from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
@@ -17,6 +18,10 @@ from collections import defaultdict
 from django.utils.timezone import now
 from account.models import TenantUser
 from django.contrib import messages
+import base64
+import requests
+from django.conf import settings
+
 
 @csrf_exempt
 def student_update(request):
@@ -132,7 +137,7 @@ def group_list(request):
                 tenant=tenant,
                 teacher=tenant_user.teacher_profile  # Assuming Group has a ForeignKey to teacher (PersonalInfo)
             ).annotate(
-                group_count=Count('students', filter=Q(students__status='Paid'))
+                group_count=Count('students', filter=Q(students__status='Active' or 'Tekin'))
             )
             teachers = Teacher.objects.filter(id=tenant_user.teacher_profile.id)  # Only the teacher themselves
         else:
@@ -140,23 +145,23 @@ def group_list(request):
             students_in_group = Group.objects.filter(
                 tenant=tenant
             ).annotate(
-                group_count=Count('students', filter=Q(students__status='Paid'))
+                group_count=Count('students', filter=Q(students__status='Active' or 'Tekin'))
             )
             teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
     else:
         # When no tenant is set, fetch all groups and teachers without tenant filtering
         students_in_group = Group.objects.all().annotate(
-            group_count=Count('students', filter=Q(students__status='Paid')))
+            group_count=Count('students', filter=Q(students__status='Active' or 'Tekin')))
         teachers = Teacher.objects.all()
 
     tenant_filter = request.GET.get('tenant_filter')
     if tenant_filter:
         students_in_group = Group.objects.filter(tenant=tenant_filter).annotate(
-            group_count=Count('students', filter=Q(students__status='Paid')))
+            group_count=Count('students', filter=Q(students__status='Active' or 'Tekin')))
     tenants = Tenant.objects.all()
     days = Group.day_choices
     group_id = request.POST.get('group_id')
-    edit_group_students = PersonalInfo.objects.filter(group=group_id, tenant=tenant, status='Paid')
+    edit_group_students = PersonalInfo.objects.filter(group=group_id, tenant=tenant, status='Active' or 'Tekin')
 
     context = {
         'tenants': tenants,
@@ -296,6 +301,7 @@ class SaveAttendanceView(View):
     def post(self, request, *args, **kwargs):
         today_date = request.POST.get('date')
         group_id = request.POST.get('group')
+        unit = request.POST.get('unit')
         group = get_object_or_404(Group, id=group_id)
         # Validate and parse the date
         if today_date:
@@ -320,10 +326,11 @@ class SaveAttendanceView(View):
                     student=student,
                     date=today_date,
                     group=group,
-                    defaults={'status':status}
+                    defaults={'status':status},
+                    unit=unit
 
                 )
-        return JsonResponse({'message': 'Attendance recorded successfully.'})
+        return render(request,'student/attendance_record.html')
 
 
 
@@ -353,7 +360,7 @@ def attendance_table(request):
 
     # Get unique students and dates only if there's data available
     students = attendance_data.values('student__name').distinct().order_by('student__name') if data_available else []
-    dates = attendance_data.values_list('date', flat=True).distinct().order_by('date') if data_available else []
+    dates = attendance_data.values_list('date', 'unit').distinct().order_by('date') if data_available else []
 
     # Group attendance by student and date if data is available
     attendance_by_student = defaultdict(dict)
@@ -507,9 +514,4 @@ class ExpenseListView(ListView):
             messages.info(self.request, "No filter applied. Showing all expenses.")
 
         return queryset
-
-
-
-
-
 

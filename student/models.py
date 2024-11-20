@@ -19,7 +19,7 @@ class Group(models.Model):
     objects = TenantAwareManager()
 
     def __str__(self):
-        return f'{self.name} | {self.teacher} | {self.day} | {self.time}'
+        return f'{self.teacher} | {self.name} | {self.day} | {self.time}'
 
 
 class Balance(models.Model):
@@ -43,13 +43,14 @@ class PersonalInfo(models.Model):
     status_choices = (
         ('Comer', 'Comer'),
         ('Waiting', 'Waiting'),
-        ('Paid', 'Paid'),
+        ('Active', 'Active'),
         ('Unpaid', 'Unpaid'),
         ('First Lesson', 'First Lesson'),
         ('Wrong Number', 'Wrong Number'),
         ('Deposit', 'Deposit'),
         ('Deleted', 'Deleted'),
-        ('Frozen', 'Frozen')
+        ('Frozen', 'Frozen'),
+        ('Tekin', 'Tekin')
 
 
     )
@@ -108,7 +109,7 @@ class Attendance(models.Model):
             ('5', '5')
         ]
     )
-
+    unit = models.CharField(max_length=200, null=True)
     def __str__(self):
         return f"{self.student.name} - {self.date} - {self.status}"
 

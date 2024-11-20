@@ -46,8 +46,8 @@
                                 <thead>
                                     <tr role="row">
                                         <th>Name</th>
-                                        {% for date in dates %}
-                                            <th>{{ date }}</th>
+                                        {% for date, unit in dates %}
+                                            <th>{{ date }} | {{ unit}}</th>
                                         {% endfor %}
                                     </tr>
                                 </thead>

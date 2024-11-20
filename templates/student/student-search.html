@@ -34,7 +34,7 @@
                     <select name="group_contains" id="group_contains" class="form-control">
                         <option value="">Choose...</option>
                         {% for group in groups %}
-                        <option value="{{ group.id }}">{{ group.name }} | {{ group.teacher.name }} | {{ group.day }} | {{ group.time }}</option>
+                        <option value="{{ group.id }}"> {{ group.teacher.name }} | {{ group.name }} | {{ group.day }} | {{ group.time }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -111,6 +111,7 @@
                                     <th>Teacher</th>
                                     <th>Comment</th>
                                     <th>Phone</th>
+                                    <th>Balance</th>
                                     {% if not tenant_user.teacher_profile or request.user.is_superuser%}
 
                                     <th>Balance</th>
@@ -127,9 +128,10 @@
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ student.name }}</td>
                                         <td>{{ student.group }}</td>
-                                        <td>{{ student.teacher }}</td>
+                                        <td>{{student.teacher.name}}</td>
                                         <td>{{student.comment}}</td>
                                         <td>{{student.phone_no}}</td>
+                                        <td>{{student.balance}}</td>
                                         {% if not tenant_user.teacher_profile %}
                                         <td>
                                             <button type="button" data-balance="{{student.balance}}" data-student-id="{{student.id}}"
@@ -216,7 +218,7 @@
             </div>
             <div class="modal-body">
                 <form id="editBalanceForm">
-                    <input type="hidden" name="student_id" id="editStudent">
+                    <input type="hidden" name="student_id" id="editStudent" >
                     <div class="form-group">
                         <label for="editAmount">Amount</label>
                         <input type="number" name="amount" id="editAmount" class="form-control">
