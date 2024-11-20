@@ -150,7 +150,10 @@
                 {% elif student.status == 'Another Branch' %}
                     background-color: yellow;
                     color: black;
-                {% elif student.status == 'Active' or 'Tekin' %}
+                {% elif student.status == 'Active' %}
+                    background-color: green;
+                    color: black;
+                {% elif student.status == 'Tekin' %}
                     background-color: green;
                     color: black;
                 {% elif student.status == 'First Lesson' %}
