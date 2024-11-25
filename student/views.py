@@ -18,8 +18,7 @@ from collections import defaultdict
 from django.utils.timezone import now
 from account.models import TenantUser
 from django.contrib import messages
-import base64
-import requests
+
 from django.conf import settings
 
 
