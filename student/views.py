@@ -366,7 +366,8 @@ def attendance_table(request):
     attendance_by_student = defaultdict(dict)
     if data_available:
         for record in attendance_data:
-            attendance_by_student[record.student.name][record.date] = record.status
+            key = (record.date, record.unit)
+            attendance_by_student[record.student.name][key] = record.status
 
     # Prepare context for rendering
     context = {
