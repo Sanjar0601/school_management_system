@@ -5,7 +5,7 @@ from .models import *
 from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
 from .filters import SnippetFiler
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Prefetch
 from django.views.generic import DetailView, CreateView
 from django.views import View
 from django.http import JsonResponse
@@ -18,7 +18,8 @@ from collections import defaultdict
 from django.utils.timezone import now
 from account.models import TenantUser
 from django.contrib import messages
-
+import requests
+import base64
 from django.conf import settings
 
 
@@ -101,7 +102,7 @@ def student_registration(request):
         personal_info_form = PersonalInfoForm(request.POST, tenant=tenant)
         if personal_info_form.is_valid():
             personal_info_form.save()
-            return redirect('student-search')
+            return redirect('student-registration')
     context = {
          'personal_info_form': personal_info_form,
          }
@@ -123,44 +124,74 @@ def group_registration(request):
 
 
 
+
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
 
     # Get the current TenantUser (if exists)
     tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
 
+    # Filter for students with specific statuses
+    students_filter = PersonalInfo.objects.filter(status__in=['Active', 'Tekin'])
+
     if tenant and tenant_user:
         if tenant_user.is_teacher:
             # Teacher can only see groups where they are assigned as a teacher
             students_in_group = Group.objects.filter(
                 tenant=tenant,
-                teacher=tenant_user.teacher_profile  # Assuming Group has a ForeignKey to teacher (PersonalInfo)
+                teacher=tenant_user.teacher_profile,
+                students__status__in=['Active', 'Tekin']
+            ).prefetch_related(
+                Prefetch('students', queryset=students_filter)
             ).annotate(
-                group_count=Count('students', filter=Q(students__status='Active' or 'Tekin'))
-            )
+                group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
+            ).distinct()
+
             teachers = Teacher.objects.filter(id=tenant_user.teacher_profile.id)  # Only the teacher themselves
         else:
             # Admin can see all groups within the tenant
             students_in_group = Group.objects.filter(
-                tenant=tenant
+                tenant=tenant,
+                students__status__in=['Active', 'Tekin']
+            ).prefetch_related(
+                Prefetch('students', queryset=students_filter)
             ).annotate(
-                group_count=Count('students', filter=Q(students__status='Active' or 'Tekin'))
-            )
+                group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
+            ).distinct()
+
             teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
     else:
         # When no tenant is set, fetch all groups and teachers without tenant filtering
-        students_in_group = Group.objects.all().annotate(
-            group_count=Count('students', filter=Q(students__status='Active' or 'Tekin')))
+        students_in_group = Group.objects.filter(
+            students__status__in=['Active', 'Tekin']
+        ).prefetch_related(
+            Prefetch('students', queryset=students_filter)
+        ).annotate(
+            group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
+        ).distinct()
+
         teachers = Teacher.objects.all()
 
+    # Tenant filtering logic from GET request
     tenant_filter = request.GET.get('tenant_filter')
     if tenant_filter:
-        students_in_group = Group.objects.filter(tenant=tenant_filter).annotate(
-            group_count=Count('students', filter=Q(students__status='Active' or 'Tekin')))
+        students_in_group = Group.objects.filter(
+            tenant=tenant_filter,
+            students__status__in=['Active', 'Tekin']
+        ).prefetch_related(
+            Prefetch('students', queryset=students_filter)
+        ).annotate(
+            group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
+        ).distinct()
+
     tenants = Tenant.objects.all()
     days = Group.day_choices
+
+    # Get group ID for editing students
     group_id = request.POST.get('group_id')
-    edit_group_students = PersonalInfo.objects.filter(group=group_id, tenant=tenant, status='Active' or 'Tekin')
+    edit_group_students = PersonalInfo.objects.filter(
+        group=group_id, tenant=tenant, status__in=['Active', 'Tekin']
+    ) if group_id else None
 
     context = {
         'tenants': tenants,
@@ -290,11 +321,35 @@ class StudentDetailView(DetailView):
 class GroupStudentsView(View):
     def get(self, request, *args, **kwargs):
         group_id = self.kwargs.get('pk')
-        students = PersonalInfo.objects.filter(group=group_id).values('id', 'name', 'first_lesson_day')
+        students = PersonalInfo.objects.filter(group=group_id, status__in=['Active', 'Tekin']).values('id', 'name', 'first_lesson_day')
         today = datetime.today().strftime('%d.%m.%Y')
         students_list = list(students)  # Convert to list for JSON serialization
         return JsonResponse({'students': students_list, 'today_date': today})
 
+
+# SMS Configuration
+USERNAME = "polyglotschool"  # Replace with your username
+PASSWORD = "~1!6jrd)sO?r"  # Replace with your password
+API_URL = "https://send.smsxabar.uz/broker-api/send"
+
+AUTH_STRING = f"{USERNAME}:{PASSWORD}"
+ENCODED_AUTH = base64.b64encode(AUTH_STRING.encode()).decode()
+HEADERS = {
+    "Content-Type": "application/json",
+    "Authorization": f"Basic {ENCODED_AUTH}",
+}
+
+# Message templates for attendance statuses
+MESSAGE_TEMPLATES = {
+    "Absent": "Assalomu alaykum! Farzandingiz {name} bugungi  {group} darsga kelmadi.",
+    "0": "Assalomu alaykum! Farzandingiz {name} bugungi  {group} darsga kelmadi.",
+    "1": "Dear {name}, your absence was EXCUSED today in {group}.",
+    "2": "Dear {name}, you were UNINFORMED about today's session in {group}.",
+    "3": "Assalomu alaykum! Farzandingizning bugungi darslardagi harakatlari qoniqarsiz, ko'proq e'tibor ajratilishini so'raymiz.",
+    "4": "Assalomu alaykum! {name}ning darsdagi faol harakatlari e’tiborga olindi. Ammo yanada yaxshiroq harakat qilish maqsadga muvofiq bo’lar edi.",
+    "5": "Assalomu alaykum! {name} bugungi {group} darsga to'liq tayyor kelib, dars jarayonida faol qatnashganligi va o'zlashtirish darajasi a'lo ekanligini ma'lum qilamiz.",
+
+}
 
 class SaveAttendanceView(View):
     def post(self, request, *args, **kwargs):
@@ -302,6 +357,7 @@ class SaveAttendanceView(View):
         group_id = request.POST.get('group')
         unit = request.POST.get('unit')
         group = get_object_or_404(Group, id=group_id)
+
         # Validate and parse the date
         if today_date:
             today_date = parse_date(today_date)
@@ -310,6 +366,7 @@ class SaveAttendanceView(View):
 
         if not today_date:
             return JsonResponse({'error': 'Invalid date format.'}, status=400)
+
         for key, value in request.POST.items():
             if key.startswith('attendance_'):
                 student_id = key.split('_')[1]
@@ -321,15 +378,53 @@ class SaveAttendanceView(View):
                     continue
 
                 # Save or update the attendance record
-                obj, created = Attendance.objects.update_or_create(
+                Attendance.objects.update_or_create(
                     student=student,
                     date=today_date,
                     group=group,
-                    defaults={'status':status},
-                    unit=unit
-
+                    defaults={'status': status, 'unit': unit},
                 )
-        return render(request,'student/attendance_record.html')
+
+                # Send SMS notification
+                phone_number = student.phone_no  # Assuming the model has a `phone_number` field
+                if phone_number:
+                    self.send_sms(student, group, status, phone_number)
+
+        return render(request, 'student/attendance_record.html')
+
+    def send_sms(self, student, group, status, phone_number):
+        # Get the appropriate message template based on status
+        message_template = MESSAGE_TEMPLATES.get(status, MESSAGE_TEMPLATES)
+        message_content = message_template.format(
+            name=student.name,  # Assuming PersonalInfo has a `name` field
+            group=group.name,  # Assuming Group has a `name` field
+            status=status,
+        )
+
+        # Prepare the SMS payload
+        sms_data = {
+            "messages": [
+                {
+                    "recipient": phone_number,
+                    "message-id": f"attendance_{student.id}_{group.id}",
+                    "sms": {
+                        "originator": "Polyglot",
+                        "ttl": 300,
+                        "content": {"text": message_content},
+                    },
+                }
+            ]
+        }
+
+        # Send the SMS
+        try:
+            response = requests.post(API_URL, json=sms_data, headers=HEADERS)
+            if response.status_code == 200:
+                print(f"SMS sent successfully to {phone_number}: {message_content}")
+            else:
+                print(f"Failed to send SMS to {phone_number}: {response.text}")
+        except requests.RequestException as e:
+            print(f"Error sending SMS to {phone_number}: {e}")
 
 
 
@@ -347,11 +442,11 @@ def attendance_table(request):
     # Apply filters if provided
     if group_filter or month_filter:
         if group_filter:
-            attendance_data = attendance_data.filter(group_id=group_filter)
+            attendance_data = attendance_data.filter(group_id=group_filter, student__status__in=['Active', 'Tekin'])
 
         if month_filter:
             month_filter = int(month_filter)
-            attendance_data = attendance_data.filter(date__month=month_filter)
+            attendance_data = attendance_data.filter(date__month=month_filter, student__status__in=['Active', 'Tekin'])
 
         # Check if there are any records after filtering
         if attendance_data.exists():
