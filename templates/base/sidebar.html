@@ -87,7 +87,7 @@
           <!-- Employee Section END -->
 
           <!-- Result Section START -->
-                            {% if is_superadmin %}
+                            {% if is_superadmin or not tenant_user.teacher_profile  %}
           <li class="nav-item nav-dropdown">
            <a class="nav-link nav-dropdown-toggle" href="#">
                <i class="nav-icon icon-puzzle"></i>Result</a>

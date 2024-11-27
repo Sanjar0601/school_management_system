@@ -151,8 +151,7 @@ def group_list(request):
         else:
             # Admin can see all groups within the tenant
             students_in_group = Group.objects.filter(
-                tenant=tenant,
-                students__status__in=['Active', 'Tekin']
+                tenant=tenant
             ).prefetch_related(
                 Prefetch('students', queryset=students_filter)
             ).annotate(
