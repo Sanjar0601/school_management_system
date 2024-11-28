@@ -168,7 +168,6 @@ def group_list(request):
         ).annotate(
             group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
         ).distinct()
-
         teachers = Teacher.objects.all()
 
     # Tenant filtering logic from GET request
@@ -231,7 +230,7 @@ def BootStrapFilterView(request):
         # Fetch tenant from the request
         if tenant:
             print("Tenant found")
-            qs = PersonalInfo.objects.filter(tenant=tenant)  # Filter by tenant
+            qs = PersonalInfo.objects.filter(tenant=tenant).select_related('Group', 'Teacher')  # Filter by tenant
             if tenant_user and tenant_user.teacher_profile:
                 print('User is a teacher')
                 qs = qs.filter(teacher=tenant_user.teacher_profile)
@@ -532,7 +531,7 @@ def balance_update(request):
 
 def add_expense_view(request):
     # Get the tenant associated with the current logged-in user
-    tenant = getattr(request.user, 'tenant', None)  # Assuming user has a related 'tenant' field or model
+    tenant = getattr(request, 'tenant', None)  # Assuming user has a related 'tenant' field or model
 
     if tenant is None:
         print(messages.error(request, 'No tenant found for this user.'))
@@ -545,10 +544,8 @@ def add_expense_view(request):
             expense.save()  # Save the expense after assigning the tenant
             messages.success(request, 'Expense added successfully!')
             return redirect('add_expense')  # Redirect back to the same page
-
     else:
         form = ExpenseForm()  # Initialize an empty form for GET requests
-
     return render(request, 'student/add_expense.html', {'form': form})
 
 
@@ -558,7 +555,8 @@ class ExpenseListView(ListView):
     context_object_name = 'expenses'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        tenant = getattr(self.request, 'tenant', None)
+        queryset = Expense.objects.filter(tenant=tenant)
         filtered = False
 
         # Get filtering criteria from GET request parameters
@@ -568,7 +566,6 @@ class ExpenseListView(ListView):
         end_date = self.request.GET.get('end_date')
         min_amount = self.request.GET.get('min_amount')
         max_amount = self.request.GET.get('max_amount')
-
         # Apply filters if parameters are provided
         if category:
             queryset = queryset.filter(category=category)

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'background_task',
     'django_celery_results',
+    # 'debug_toolbar'
  ]
 
 
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'student.tenant_middleware.TenantMiddleware',
+
 ]
 
 
@@ -160,7 +162,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Change 'staticfiles' to y
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+INTERNAL_IPS = ["127.0.0.1"]
 
 JAZZMIN_SETTINGS = JAZZMIN_SETTINGS
 # settings.py

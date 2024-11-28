@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from .views import home_page
 from . import settings
+from debug_toolbar.toolbar import debug_toolbar_urls
 from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 
 urlpatterns = [
@@ -28,6 +29,6 @@ urlpatterns = [
     path('employee/', include('employee.urls')),
     path('account/', include('account.urls')),
     # path('advanced_filters/', include('advanced_filters.urls'))
-]
+] + debug_toolbar_urls()
 urlpatterns += staticfiles_urlpatterns()
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

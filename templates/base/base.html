@@ -35,39 +35,28 @@
 
 <body class="app header-fixed sidebar-fixed aside-menu-fixed aside-menu-hidden" style="background-image: url('{% static "src/img/login.png" %}'); background-size: cover; background-position: center;">
 {% include 'base/navbar.html' %}
-
 <div class="app-body">
     <!--Sidebar-->
     {% include 'base/sidebar.html' %}
-
     <!-- Main content -->
     <main class="main">
-
         <!-- Breadcrumb -->
         {% include 'base/breadcrumb.html' %}
-
         <!-- Page contents -->
         <div class="container-fluid">
             <div class="animated fadeIn">
                 {% block content %}
                 {% endblock %}
             </div>
-
         </div>
         <!-- /.conainer-fluid -->
     </main>
-
-
     <!--Aside bar-->
     {% include 'base/asidebar.html' %}
-
 </div>
-
 <!--Footer-->
 {% include 'base/footer.html' %}
-
 <!--JS-->
 {% include 'base/js.html' %}
-
 </body>
 </html>
