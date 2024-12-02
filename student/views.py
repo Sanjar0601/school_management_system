@@ -230,7 +230,7 @@ def BootStrapFilterView(request):
         # Fetch tenant from the request
         if tenant:
             print("Tenant found")
-            qs = PersonalInfo.objects.filter(tenant=tenant).select_related('Group', 'Teacher')  # Filter by tenant
+            qs = PersonalInfo.objects.filter(tenant=tenant)  # Filter by tenant
             if tenant_user and tenant_user.teacher_profile:
                 print('User is a teacher')
                 qs = qs.filter(teacher=tenant_user.teacher_profile)
