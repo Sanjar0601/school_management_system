@@ -346,8 +346,9 @@ MESSAGE_TEMPLATES = {
     "3": "Assalomu alaykum! Farzandingizning bugungi darslardagi harakatlari qoniqarsiz, ko'proq e'tibor ajratilishini so'raymiz.",
     "4": "Assalomu alaykum! {name}ning darsdagi faol harakatlari e’tiborga olindi. Ammo yanada yaxshiroq harakat qilish maqsadga muvofiq bo’lar edi.",
     "5": "Assalomu alaykum! {name} bugungi {group} darsga to'liq tayyor kelib, dars jarayonida faol qatnashganligi va o'zlashtirish darajasi a'lo ekanligini ma'lum qilamiz.",
-    "6": 'Дорогие родители! 20.12 в 15:00 будет Новогодняя вечеринка в ресторане Шохсарой. Билетов осталось мало, успейте подарить своему ребёнку Новогоднее настроение. Спасибо что выбрали Polyglot Language School. (90 5033030) Hurmatli ota-onalar! 20.12 soat 15:00 Shohsaroy restoranida Yangi Yil bazmi bo`lib o`tadi. Chiptalar soni juda oz qolgan. O`z farzandingizga yangi yil kayfiyati sovg`a qiling. Polyglotlanguage schoolni tanlaganingiz uchun raxmat. (90 5033030)'}
-
+    "6": "Дорогие родители! 20.12 в 15:00 будет Новогодняя вечеринка в ресторане Шохсарой. Билетов осталось мало, успейте подарить своему ребёнку Новогоднее настроение. Спасибо что выбрали Polyglot Language School. (90 5033030) "
+         "Hurmatli ota-onalar! 20.12 soat 15:00 Shohsaroy restoranida Yangi Yil bazmi bo'lib o'tadi. Chiptalar soni juda oz qolgan. O'z farzandingizga yangi yil kayfiyati sovg'a qiling. Polyglotlanguage schoolni tanlaganingiz uchun raxmat. (90 5033030)",
+}
 class SaveAttendanceView(View):
     def post(self, request, *args, **kwargs):
         today_date = request.POST.get('date')
