@@ -50,7 +50,8 @@ class PersonalInfo(models.Model):
         ('Deposit', 'Deposit'),
         ('Deleted', 'Deleted'),
         ('Frozen', 'Frozen'),
-        ('Tekin', 'Tekin')
+        ('Tekin', 'Tekin'),
+        ('Duplicate', 'Duplicate'),
 
 
     )
@@ -107,7 +108,6 @@ class Attendance(models.Model):
             ('3', '3'),
             ('4', '4'),
             ('5', '5'),
-            ('Yangi Yil', 'Yangi Yil'),
         ]
     )
     unit = models.CharField(max_length=200, null=True)

@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'background_task',
     'django_celery_results',
-    # 'debug_toolbar'
+    'debug_toolbar'
  ]
 
 
@@ -67,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'student.tenant_middleware.TenantMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 
 ]
 
