@@ -50,7 +50,7 @@ class PersonalInfo(models.Model):
         ('Deposit', 'Deposit'),
         ('Deleted', 'Deleted'),
         ('Frozen', 'Frozen'),
-        ('Tekin', 'Tekin'),
+        ('Free', 'Free'),
         ('Duplicate', 'Duplicate'),
 
 

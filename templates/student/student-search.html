@@ -79,7 +79,8 @@
                     <button type="submit" class="btn btn-primary w-100">Search</button> <!-- w-100 ensures the button takes full width of the column -->
                 </div>
                 <div class="ml-3">
-                    <strong><p class="mb-3" style="font:bold;">Total: {{queryset.count}}</p></strong>
+                    <strong>
+                        <p class="mb-3" style="font:bold;">Total: {{queryset.count}}</p></strong>
                 </div>
             </div>
         </form>
@@ -153,7 +154,7 @@
                 {% elif student.status == 'Active' %}
                     background-color: green;
                     color: black;
-                {% elif student.status == 'Tekin' %}
+                {% elif student.status == 'Free' %}
                     background-color: green;
                     color: black;
                 {% elif student.status == 'First Lesson' %}
