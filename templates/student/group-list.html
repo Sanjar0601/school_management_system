@@ -83,7 +83,11 @@
                                                    data-toggle="modal"
                                                    data-target="#editGroupModal">
                                                     <i class="fa fa-edit"></i> Edit
-                                                </a></td>
+                                                </a>
+                                                <button class="btn-danger delete-group-btn" data-group-id="{{ group.id }}">
+                                                    Delete</button></td>
+
+                                            </td>
                                             {% endif %}
                                         </tr>
                                         {% endfor %}
@@ -252,13 +256,10 @@
                             '<td>' +
                             '<select name="attendance_' + student.id + '">' +
                             '<option value="Absent">Absent</option>' +
-                            '<option value="0">0</option>' +
-                            '<option value="1">1</option>' +
                             '<option value="2">2</option>' +
                             '<option value="3">3</option>' +
                             '<option value="4">4</option>' +
                             '<option value="5">5</option>' +
-                            '<option value="6">Yangi Yil</option>' +
 
                             '</select>' +
                             '</td>' +
@@ -360,6 +361,7 @@ $(document).ready(function() {
         });
     });
 });
+
 
 
 </script>

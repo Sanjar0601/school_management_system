@@ -123,8 +123,6 @@ def group_registration(request):
     return render(request, 'student/group_form.html', context)
 
 
-
-
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
 
@@ -547,7 +545,6 @@ def add_expense_view(request):
         form = ExpenseForm()  # Initialize an empty form for GET requests
     return render(request, 'student/add_expense.html', {'form': form})
 
-
 class ExpenseListView(ListView):
     model = Expense
     template_name = 'student/expense_list.html'  # Adjust the template path if necessary
@@ -608,3 +605,22 @@ class ExpenseListView(ListView):
 
         return queryset
 
+
+@csrf_exempt
+def delete_group(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group_id')
+
+        # Ensure group ID is provided
+        if not group_id:
+            return JsonResponse({'success': False, 'error': 'Group ID is required.'}, status=400)
+
+        try:
+            # Fetch the group object and delete it
+            group = get_object_or_404(Group, id=group_id)
+            group.delete()
+            return JsonResponse({'success': True, 'message': 'Group deleted successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
