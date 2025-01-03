@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from .models import PersonalInfo
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, date, timedelta
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.utils.dateparse import parse_date
 from collections import defaultdict
 from django.utils.timezone import now
@@ -133,6 +133,24 @@ def group_registration(request):
         }
     return render(request, 'student/group_form.html', context)
 
+@csrf_exempt
+def delete_group(request):
+    if request.method == 'GET':
+        group_id = request.GET.get('group_id')
+        print('Group id:',group_id)
+        # Ensure group ID is provided
+        if not group_id:
+            return JsonResponse({'success': False, 'error': 'Group ID is required.'}, status=400)
+
+        try:
+            # Fetch the group object and delete it
+            group = get_object_or_404(Group, id=group_id)
+            group.delete()
+            return redirect(reverse('group-list'))
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
@@ -539,8 +557,7 @@ def balance_update(request):
 def add_expense_view(request):
     # Get the tenant associated with the current logged-in user
     tenant = getattr(request, 'tenant', None)  # Assuming user has a related 'tenant' field or model
-    user = getattr((request, 'user'))
-    print(user)
+    tenant_user = TenantUser.objects.get(user=request.user, tenant=tenant)
     if tenant is None:
         print(messages.error(request, 'No tenant found for this user.'))
 
@@ -549,6 +566,7 @@ def add_expense_view(request):
         if form.is_valid():
             expense = form.save(commit=False)  # Don't save yet, as we need to assign the tenant
             expense.tenant = tenant  # Assign the tenant here
+            expense.auth_user = tenant_user.user
             expense.save()  # Save the expense after assigning the tenant
             messages.success(request, 'Expense added successfully!')
             return redirect('add_expense')  # Redirect back to the same page
@@ -617,21 +635,3 @@ class ExpenseListView(ListView):
         return queryset
 
 
-@csrf_exempt
-def delete_group(request):
-    if request.method == 'POST':
-        group_id = request.POST.get('group_id')
-
-        # Ensure group ID is provided
-        if not group_id:
-            return JsonResponse({'success': False, 'error': 'Group ID is required.'}, status=400)
-
-        try:
-            # Fetch the group object and delete it
-            group = get_object_or_404(Group, id=group_id)
-            group.delete()
-            return JsonResponse({'success': True, 'message': 'Group deleted successfully.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)

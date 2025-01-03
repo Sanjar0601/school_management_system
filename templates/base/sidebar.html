@@ -72,25 +72,11 @@
            <!-- Student Section END -->
 
 
-           <!-- Employee Section START -->
-           <li class="nav-item nav-dropdown">
-            <a class="nav-link nav-dropdown-toggle" href="#">
-                <i class="nav-icon icon-puzzle"></i>Employee</a>
-            <ul class="nav-dropdown-items">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fa fa-plus-circle"></i>Add Employee</a>
-                </li>
-
-            </ul>
-          </li>
-          <!-- Employee Section END -->
-
           <!-- Result Section START -->
                             {% if is_superadmin or not tenant_user.teacher_profile  %}
           <li class="nav-item nav-dropdown">
            <a class="nav-link nav-dropdown-toggle" href="#">
-               <i class="nav-icon icon-puzzle"></i>Result</a>
+               <i class="fa-solid fa-coins"></i>Expenses</a>
            <ul class="nav-dropdown-items">
                <li class="nav-item">
                    <a class="nav-link" href="{% url 'add_expense' %}" >

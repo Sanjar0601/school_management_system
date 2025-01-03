@@ -53,7 +53,7 @@
                                             <th>Name</th>
                                             <th>Teacher</th>
                                             <th>Status</th>
-                                            <th>Date</th>
+                                            <th>Time</th>
                                             <th>Enrollment</th>
                                             {% if not tenant_user.teacher_profile %}
                                             <th>Actions</th>
@@ -84,8 +84,12 @@
                                                    data-target="#editGroupModal">
                                                     <i class="fa fa-edit"></i> Edit
                                                 </a>
-                                                <button class="btn-danger delete-group-btn" data-group-id="{{ group.id }}">
-                                                    Delete</button></td>
+                                                <a class="btn btn-danger delete-group-btn"
+                                                      href="{% url 'delete-group' %}?group_id={{ group.id }}">
+
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </a>
+                                            </td>
 
                                             </td>
                                             {% endif %}
@@ -224,144 +228,153 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
-  var csrfToken = "{{ csrf_token }}";
+    var csrfToken = "{{ csrf_token }}";
 
-  $(document).ready(function() {
-    $('.group-details').on('click', function() {
-        var groupId = $(this).data('group-id');
-        var teacherName = $(this).data('teacher-name');
-        var groupName = $(this).data('group.id'); // Assuming you set group-name data attribute
-        var modal = $('#groupModal');
-        $('#groupId').val(groupId);
+    $(document).ready(function () {
+        $('.group-details').on('click', function () {
+            var groupId = $(this).data('group-id');
+            var teacherName = $(this).data('teacher-name');
+            var groupName = $(this).data('group.id'); // Assuming you set group-name data attribute
+            var modal = $('#groupModal');
+            $('#groupId').val(groupId);
 
-        var teacherNameElem = modal.find('#teacherName');
-        var todayDateElem = $('#todayDate');
-
-        $.ajax({
-            url: '/student/group-students/' + groupId + '/',
-            method: 'GET',
-            success: function(response) {
-                var studentList = modal.find('#studentList');
-                studentList.empty();
-
-                teacherNameElem.text('Teacher: ' + teacherName);
-                todayDateElem.text(response.today_date);
-
-                if (response.students && Array.isArray(response.students)) {
-                    response.students.forEach(function(student) {
-                        studentList.append(
-                            '<tr>' +
-                            '<td>' + student.name + '</td>' +
-                            '<td>' + student.first_lesson_day + '</td>' +
-                            '<td>' +
-                            '<select name="attendance_' + student.id + '">' +
-                            '<option value="Absent">Absent</option>' +
-                            '<option value="2">2</option>' +
-                            '<option value="3">3</option>' +
-                            '<option value="4">4</option>' +
-                            '<option value="5">5</option>' +
-
-                            '</select>' +
-                            '</td>' +
-                            '</tr>'
-                        );
-                    });
-                } else {
-                    studentList.append('<tr><td colspan="3">No students found</td></tr>');
-                }
-
-                modal.modal('show');
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching students:', status, error);
-            }
-        });
-
-        // Update submit button click handler
-        $('#submitAttendance').on('click', function() {
-            var formData = $('#attendanceForm').serialize();
-            var currentDate = new Date().toISOString().split('T')[0]; // Format current date as YYYY-MM-DD
-
-
-            // Append current date and group name to form data
-            formData += '&date=' + encodeURIComponent(currentDate);
-             console.log(formData);
+            var teacherNameElem = modal.find('#teacherName');
+            var todayDateElem = $('#todayDate');
 
             $.ajax({
-                url: "{% url 'save-attendance' %}",
-                headers: { 'X-CSRFToken': csrfToken },
+                url: '/student/group-students/' + groupId + '/',
+                method: 'GET',
+                success: function (response) {
+                    var studentList = modal.find('#studentList');
+                    studentList.empty();
+
+                    teacherNameElem.text('Teacher: ' + teacherName);
+                    todayDateElem.text(response.today_date);
+
+                    if (response.students && Array.isArray(response.students)) {
+                        response.students.forEach(function (student) {
+                            studentList.append(
+                                '<tr>' +
+                                '<td>' + student.name + '</td>' +
+                                '<td>' + student.first_lesson_day + '</td>' +
+                                '<td>' +
+                                '<select name="attendance_' + student.id + '">' +
+                                '<option value="Absent">Absent</option>' +
+                                '<option value="2">2</option>' +
+                                '<option value="3">3</option>' +
+                                '<option value="4">4</option>' +
+                                '<option value="5">5</option>' +
+
+                                '</select>' +
+                                '</td>' +
+                                '</tr>'
+                            );
+                        });
+                    } else {
+                        studentList.append('<tr><td colspan="3">No students found</td></tr>');
+                    }
+
+                    modal.modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching students:', status, error);
+                }
+            });
+
+            // Update submit button click handler
+            $('#submitAttendance').on('click', function () {
+                var formData = $('#attendanceForm').serialize();
+                var currentDate = new Date().toISOString().split('T')[0]; // Format current date as YYYY-MM-DD
+
+
+                // Append current date and group name to form data
+                formData += '&date=' + encodeURIComponent(currentDate);
+                console.log(formData);
+
+                $.ajax({
+                    url: "{% url 'save-attendance' %}",
+                    headers: {'X-CSRFToken': csrfToken},
+                    method: 'POST',
+                    data: formData,
+
+                    success: function (response) {
+                        var alertHtml = '<div id="alertContainer" class="alert alert-success alert-dismissible fade show fixed-top" role="alert">' +
+                            'Attendance recorded successfully.' +
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                            '<span aria-hidden="true">&times;</span>' +
+                            '</button>' +
+                            '</div>';
+
+                        $('body').prepend(alertHtml);
+
+                        $('#groupModal').modal('hide').on('hidden.bs.modal', function () {
+                            $('.modal-backdrop').remove(); // Remove any lingering backdrop
+                        });
+
+                        setTimeout(function () {
+                            $('#alertContainer').alert('close');
+                        }, 5000);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error saving attendance:', status, error);
+                    }
+                });
+            });
+        });
+    });
+    $(document).ready(function () {
+        $('.edit-group-btn').on('click', function () {
+            var groupId = $(this).data('group-id');
+            var url = '/group/' + groupId + '/edit/';
+            var groupName = $(this).data('group-name');
+            var groupTeacher = $(this).data('group-teacher');
+            var groupDay = $(this).data('group-day');
+            var groupTime = $(this).data('group-time');
+            var groupCount = $(this).data('group-count');
+
+            // Populate form fields with data
+            $('#editGroupId').val(groupId);
+            $('#editGroupName').val(groupName);
+            $('#editGroupTeacher').val(groupTeacher);  // Set teacher in select field
+            $('#editGroupDay').val(groupDay);  // Set day in select field
+            $('#editGroupTime').val(groupTime);
+            $('#editGroupCount').val(groupCount);
+        });
+
+        $('#editGroupForm').on('submit', function (event) {
+            event.preventDefault();
+            var groupId = $('#editGroupId').val();  // Get group ID from hidden field
+            var formData = $(this).serialize();
+
+            $.ajax({
+                url: '{% url "edit_group" %}',
                 method: 'POST',
                 data: formData,
-
-                success: function(response) {
-                    var alertHtml = '<div id="alertContainer" class="alert alert-success alert-dismissible fade show fixed-top" role="alert">' +
-                                    'Attendance recorded successfully.' +
-                                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
-                                    '<span aria-hidden="true">&times;</span>' +
-                                    '</button>' +
-                                    '</div>';
-
-                    $('body').prepend(alertHtml);
-
-                    $('#groupModal').modal('hide').on('hidden.bs.modal', function () {
-                        $('.modal-backdrop').remove(); // Remove any lingering backdrop
-                    });
-
-                    setTimeout(function() {
-                        $('#alertContainer').alert('close');
-                    }, 5000);
+                headers: {
+                    'X-CSRFToken': csrfToken
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error saving attendance:', status, error);
+                success: function (response) {
+                    console.log('Successfully updated group');
+                    // Optionally, update the DOM instead of reloading the page
+                    location.reload();  // If you prefer a full page reload
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error updating group:', status, error);
+                    alert('An error occurred while updating the group.');
                 }
             });
         });
     });
-  });
-$(document).ready(function() {
-    $('.edit-group-btn').on('click', function() {
-        var groupId = $(this).data('group-id');
-        var url = '/group/' + groupId + '/edit/';
-        var groupName = $(this).data('group-name');
-        var groupTeacher = $(this).data('group-teacher');
-        var groupDay = $(this).data('group-day');
-        var groupTime = $(this).data('group-time');
-        var groupCount = $(this).data('group-count');
-
-        // Populate form fields with data
-        $('#editGroupId').val(groupId);
-        $('#editGroupName').val(groupName);
-        $('#editGroupTeacher').val(groupTeacher);  // Set teacher in select field
-        $('#editGroupDay').val(groupDay);  // Set day in select field
-        $('#editGroupTime').val(groupTime);
-        $('#editGroupCount').val(groupCount);
-    });
-
-    $('#editGroupForm').on('submit', function(event) {
-        event.preventDefault();
-        var groupId = $('#editGroupId').val();  // Get group ID from hidden field
-        var formData = $(this).serialize();
-
-        $.ajax({
-            url: '{% url "edit_group" %}',
-            method: 'POST',
-            data: formData,
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            success: function(response) {
-                console.log('Successfully updated group');
-                // Optionally, update the DOM instead of reloading the page
-                location.reload();  // If you prefer a full page reload
-            },
-            error: function(xhr, status, error) {
-                console.error('Error updating group:', status, error);
-                alert('An error occurred while updating the group.');
-            }
+        document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-group-btn').forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                if (!confirm('Are you sure you want to delete this group?')) {
+                    event.preventDefault(); // Cancel the default behavior
+                }
+            });
         });
     });
-});
-
+</script>
 
 
 </script>

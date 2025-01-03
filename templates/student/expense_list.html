@@ -83,6 +83,7 @@
                                     <th>Type</th>
                                     <th>Amount</th>
                                     <th>Branch</th>
+                                    <th>Worker</th>
 
 
                                 </tr>
@@ -97,6 +98,8 @@
                                         <td>{{expense.types}}</td>
                                         <td>{{ expense.amount_spent }}</td>
                                         <td>{{expense.tenant}}</td>
+                                        <td>{{expense.auth_user.username}}</td>
+                                        <td>{{expense.auth_user.username}}</td>
 
                                     </tr>
                                 {% endfor %}
