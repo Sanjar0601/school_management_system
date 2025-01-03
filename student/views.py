@@ -96,17 +96,28 @@ def student_update(request):
 
 def student_registration(request):
     tenant = getattr(request, 'tenant', None)
-    personal_info_form = PersonalInfoForm(request.POST or None, request.FILES or None, tenant=tenant)
+    personal_info_form = PersonalInfoForm(request.POST or None,
+                                          request.FILES or None,
+                                          tenant=tenant)
     print(tenant)
     if request.method == 'POST':
         personal_info_form = PersonalInfoForm(request.POST, tenant=tenant)
         if personal_info_form.is_valid():
             personal_info_form.save()
             return redirect('student-registration')
+    else:
+        personal_info_form = PersonalInfoForm(tenant=tenant)
     context = {
          'personal_info_form': personal_info_form,
          }
     return render(request, 'student/student-registration.html', context)
+
+
+def load_groups(request):
+    teacher_id = request.GET.get('teacher_id')
+    tenant = getattr(request, 'tenant', None)
+    groups = Group.objects.filter(teacher=teacher_id, tenant=tenant).values('id', 'name')
+    return JsonResponse(list(groups), safe=False)
 
 
 def group_registration(request):

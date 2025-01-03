@@ -11,7 +11,7 @@
                     <div class="card-body">
                         {% csrf_token %}
                         {{ personal_info_form.as_p }}  <!-- This will render the fields with the specified Bootstrap classes -->
-                                            <button id="submit" type="submit" class="btn btn-primary rounded-pill pull-right"  style="padding: 10px 20px;">Submit</button>
+                        <button id="submit" type="submit" class="btn btn-primary rounded-pill pull-right"  style="padding: 10px 20px;">Submit</button>
 
                     </div>
                 </div>
@@ -21,6 +21,35 @@
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script src="{% static 'src/js/registration.js' %}"></script>
         <script src="{% static 'src/js/address.js' %}"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('#id_teacher').change(function () {
+                    var teacherId = $(this).val();
+                    var groupField = $('#id_group');
+                    console.log(teacherId)
+                    groupField.empty(); // Clear existing options
+
+                    if (teacherId) {
+                        $.ajax({
+                            url: "{% url 'ajax-load-groups' %}", // Adjust URL name if needed
+                            data: { 'teacher_id': teacherId },
+                            success: function (data) {
+                                groupField.append('<option value="">Select a group</option>');
+                                data.forEach(function (group) {
+                                    groupField.append('<option value="' + group.id + '">' + group.name + '</option>');
+                                });
+                            },
+                            error: function () {
+                                alert('Error fetching groups.');
+                            }
+                        });
+                    } else {
+                        groupField.append('<option value="">Select a teacher first</option>');
+                    }
+                });
+            });
+        </script>
     </div>
 </div>
 {% endblock %}

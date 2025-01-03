@@ -52,6 +52,7 @@ class PersonalInfo(models.Model):
         ('Frozen', 'Frozen'),
         ('Free', 'Free'),
         ('Duplicate', 'Duplicate'),
+        ('Another Branch', 'Another Branch'),
 
 
     )

@@ -74,17 +74,28 @@ class PersonalInfoForm(forms.ModelForm):
     first_come_day = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
 
     def __init__(self, *args, **kwargs):
-        self.tenant = kwargs.pop('tenant', None)  # Capture tenant and remove from kwargs
-        super().__init__(*args, **kwargs)  # Initialize the form as usual
+        self.tenant = kwargs.pop('tenant', None)
+        super().__init__(*args, **kwargs)
 
+        # Filter teacher queryset by tenant
         if self.tenant:
-            self.fields['teacher'].queryset = Teacher.objects.filter(
-                tenant=self.tenant,
-            )
-            self.fields['group'].queryset = Group.objects.filter(
-                tenant=self.tenant,
-            )
+            self.fields['teacher'].queryset = Teacher.objects.filter(tenant=self.tenant)
+        else:
+            self.fields['teacher'].queryset = Teacher.objects.none()
 
+        # Default to empty queryset for group
+        self.fields['group'].queryset = Group.objects.none()
+
+        # Dynamically update group queryset if teacher is provided in POST data
+        if 'teacher' in self.data:
+            try:
+                teacher_id = int(self.data.get('teacher'))
+                self.fields['group'].queryset = Group.objects.filter(teacher_id=teacher_id, tenant=self.tenant)
+            except (ValueError, TypeError):
+                self.fields['group'].queryset = Group.objects.none()
+        elif self.instance.pk and self.instance.teacher:
+            # Pre-fill groups for editing existing instance
+            self.fields['group'].queryset = Group.objects.filter(teacher=self.instance.teacher, tenant=self.tenant)
     def save(self, commit=True):
         instance = super().save(commit=False)  # Don't save to the database yet
         if self.tenant:

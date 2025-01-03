@@ -17,5 +17,6 @@ urlpatterns = [
     path('expenses/add/', views.add_expense_view, name='add_expense'),
     path('expense_list', views.ExpenseListView.as_view(), name='expense_list'),
     path('delete-group/', views.delete_group, name='delete-group'),
+    path('ajax/load-groups', views.load_groups, name='ajax-load-groups'),
 
 ]
