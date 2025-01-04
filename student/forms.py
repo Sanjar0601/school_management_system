@@ -96,6 +96,15 @@ class PersonalInfoForm(forms.ModelForm):
         elif self.instance.pk and self.instance.teacher:
             # Pre-fill groups for editing existing instance
             self.fields['group'].queryset = Group.objects.filter(teacher=self.instance.teacher, tenant=self.tenant)
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        # Assuming tenant-based uniqueness
+        if PersonalInfo.objects.filter(phone=phone, tenant=self.tenant).exists():
+            raise forms.ValidationError("A student with this phone number already exists.")
+        return phone
+
+
     def save(self, commit=True):
         instance = super().save(commit=False)  # Don't save to the database yet
         if self.tenant:

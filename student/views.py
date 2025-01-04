@@ -116,7 +116,7 @@ def student_registration(request):
 def load_groups(request):
     teacher_id = request.GET.get('teacher_id')
     tenant = getattr(request, 'tenant', None)
-    groups = Group.objects.filter(teacher=teacher_id, tenant=tenant).values('id', 'name')
+    groups = Group.objects.filter(teacher=teacher_id, tenant=tenant).values('id', 'name', 'day', 'time')
     return JsonResponse(list(groups), safe=False)
 
 
@@ -594,6 +594,7 @@ class ExpenseListView(ListView):
         end_date = self.request.GET.get('end_date')
         min_amount = self.request.GET.get('min_amount')
         max_amount = self.request.GET.get('max_amount')
+        branch = self.request.GET.get('branch')
         # Apply filters if parameters are provided
         if category:
             queryset = queryset.filter(category=category)
@@ -621,6 +622,10 @@ class ExpenseListView(ListView):
 
         if max_amount:
             queryset = queryset.filter(amount_spent__lte=max_amount)
+            filtered = True
+
+        if branch:
+            queryset = queryset.filter(tenant=tenant)
             filtered = True
 
         # Add success/failure messages based on filtering results

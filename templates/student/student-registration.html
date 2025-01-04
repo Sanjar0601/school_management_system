@@ -37,7 +37,7 @@
                             success: function (data) {
                                 groupField.append('<option value="">Select a group</option>');
                                 data.forEach(function (group) {
-                                    groupField.append('<option value="' + group.id + '">' + group.name + '</option>');
+                                    groupField.append('<option value="' + group.id + '">' + group.name + ' | ' + group.day + ' | ' + group.time + '</option>');
                                 });
                             },
                             error: function () {

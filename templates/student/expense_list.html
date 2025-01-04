@@ -42,6 +42,16 @@
                         <label for="end_date">End Date</label>
                         <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
                     </div>
+
+                    <div class="form-group col-md-4">
+                    <label for="types">Branch:</label>
+                    <select name="branch" id="branch" class="form-control">
+                        <option value="">All</option>
+                        {% for
+                        </select>
+                </div>
+
+
                             </div>
 
 
@@ -98,7 +108,6 @@
                                         <td>{{expense.types}}</td>
                                         <td>{{ expense.amount_spent }}</td>
                                         <td>{{expense.tenant}}</td>
-                                        <td>{{expense.auth_user.username}}</td>
                                         <td>{{expense.auth_user.username}}</td>
 
                                     </tr>
