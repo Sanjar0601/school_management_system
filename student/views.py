@@ -1,26 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
-
+from .message_templates import *
 from .models import *
 from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
-from .filters import SnippetFiler
 from django.db.models import Q, Count, Prefetch
-from django.views.generic import DetailView, CreateView
+from django.views.generic import DetailView
 from django.views import View
 from django.http import JsonResponse
 from .models import PersonalInfo
 from django.views.decorators.csrf import csrf_exempt
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from collections import defaultdict
-from django.utils.timezone import now
 from account.models import TenantUser
 from django.contrib import messages
 import requests
 import base64
-from django.conf import settings
 
 
 @csrf_exempt
@@ -246,9 +243,6 @@ def student_list(request):
 
 
 
-"This is a filter function"
-
-
 def BootStrapFilterView(request):
     if request.user.is_authenticated:
         tenant = getattr(request, 'tenant', None)
@@ -365,15 +359,7 @@ HEADERS = {
 }
 
 # Message templates for attendance statuses
-MESSAGE_TEMPLATES = {
-    "Absent": "Assalomu alaykum! Farzandingiz {name} bugungi  {group} darsga kelmadi.",
-    "0": "Assalomu alaykum! Farzandingiz {name} bugungi  {group} darsga kelmadi.",
-    "1": "Dear {name}, your absence was EXCUSED today in {group}.",
-    "2": "Assalomu alaykum! Farzandingiz {name} bugun darsga tayyorlanib kelmadi, ko`proq e'tibor ajratishingizni so`raymiz",
-    "3": "Assalomu alaykum! Farzandingizning bugungi darslardagi harakatlari qoniqarsiz, ko'proq e'tibor ajratilishini so'raymiz.",
-    "4": "Assalomu alaykum! {name}ning darsdagi faol harakatlari e’tiborga olindi. Ammo yanada yaxshiroq harakat qilish maqsadga muvofiq bo’lar edi.",
-    "5": "Assalomu alaykum! {name} bugungi {group} darsga to'liq tayyor kelib, dars jarayonida faol qatnashganligi va o'zlashtirish darajasi a'lo ekanligini ma'lum qilamiz.",
-    }
+
 class SaveAttendanceView(View):
     def post(self, request, *args, **kwargs):
         today_date = request.POST.get('date')
