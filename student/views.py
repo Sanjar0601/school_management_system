@@ -149,15 +149,13 @@ def delete_group(request):
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
+
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
-
     # Get the current TenantUser (if exists)
     tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
-
     # Filter for students with specific statuses
     students_filter = PersonalInfo.objects.filter(status__in=['Active', 'Tekin'])
-
     if tenant and tenant_user:
         if tenant_user.is_teacher:
             # Teacher can only see groups where they are assigned as a teacher
@@ -181,7 +179,6 @@ def group_list(request):
             ).annotate(
                 group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
             ).distinct()
-
             teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
     else:
         # When no tenant is set, fetch all groups and teachers without tenant filtering
@@ -193,7 +190,6 @@ def group_list(request):
             group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
         ).distinct()
         teachers = Teacher.objects.all()
-
     # Tenant filtering logic from GET request
     tenant_filter = request.GET.get('tenant_filter')
     if tenant_filter:
@@ -205,16 +201,13 @@ def group_list(request):
         ).annotate(
             group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
         ).distinct()
-
     tenants = Tenant.objects.all()
     days = Group.day_choices
-
     # Get group ID for editing students
     group_id = request.POST.get('group_id')
     edit_group_students = PersonalInfo.objects.filter(
         group=group_id, tenant=tenant, status__in=['Active', 'Tekin']
     ) if group_id else None
-
     context = {
         'tenants': tenants,
         'groups': students_in_group,
@@ -380,7 +373,8 @@ class SaveAttendanceView(View):
             if key.startswith('attendance_'):
                 student_id = key.split('_')[1]
                 status = value
-
+                if status.strip() == " " or status == "Choice":
+                    continue
                 try:
                     student = PersonalInfo.objects.get(id=student_id)
                 except PersonalInfo.DoesNotExist:
@@ -424,7 +418,6 @@ class SaveAttendanceView(View):
                 }
             ]
         }
-
         # Send the SMS
         try:
             response = requests.post(API_URL, json=sms_data, headers=HEADERS)
@@ -434,8 +427,6 @@ class SaveAttendanceView(View):
                 print(f"Failed to send SMS to {phone_number}: {response.text}")
         except requests.RequestException as e:
             print(f"Error sending SMS to {phone_number}: {e}")
-
-
 
 
 def attendance_table(request):

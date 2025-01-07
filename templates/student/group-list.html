@@ -258,6 +258,7 @@
                                 '<td>' + student.first_lesson_day + '</td>' +
                                 '<td>' +
                                 '<select name="attendance_' + student.id + '">' +
+                                '<option value="Choice">Choice</option>' +
                                 '<option value="Absent">Absent</option>' +
                                 {% if tenant_user.role == 'admin' %}
                                 '<option value="Qarz">Qarz</option>' +
