@@ -80,7 +80,7 @@
                 </div>
                 <div class="ml-3">
                     <strong>
-                        <p class="mb-3" style="font:bold;">Total: {{queryset.count}}</p></strong>
+                        <p class="mb-3" style="font:bold;">Total: {{page_obj.paginator.count}}</p></strong>
                 </div>
             </div>
         </form>
@@ -124,7 +124,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for student in queryset %}
+                                {% for student in page_obj %}
                                     <tr role="row" class="odd">
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ student.name }}</td>
@@ -202,8 +202,20 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                    </div>
+                            <div class="pagination">
+                                <!-- Show Previous page link if not on the first page -->
+                                {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}"><i class="fa-solid fa-arrow-left"></i></a>
+                                {% endif %}
+                                <!-- Show page number -->
+                                <span style="padding: 0 10px;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                <!-- Show Next page link if not on the last page -->
+                                {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}"><i class="fa-solid fa-arrow-right"></i></a>
+                                {% endif %}
+                            </div>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>

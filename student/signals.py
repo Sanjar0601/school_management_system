@@ -18,13 +18,13 @@ def set_tenant(sender, instance, **kwargs):
         except TenantUser.DoesNotExist:
             instance.tenant = None  # or handle accordingly
 
-@receiver(post_save, sender=Balance)
-@receiver(post_delete, sender=Balance)
-def update_student_balance(sender, instance, **kwargs):
-    student = instance.student
-    total_balance = student.transactions.aggregate(total=models.Sum('amount'))['total'] or 0
-    student.balance = total_balance
-    student.save()
+# @receiver(post_save, sender=Balance)
+# @receiver(post_delete, sender=Balance)
+# def update_student_balance(sender, instance, **kwargs):
+#     student = instance.student
+#     total_balance = student.transactions.aggregate(total=models.Sum('amount'))['total'] or 0
+#     student.balance = total_balance
+#     student.save()
 
 @receiver(post_save, sender=PersonalInfo)
 def set_initial_balance(sender, instance, created, **kwargs):

@@ -16,6 +16,8 @@ from django.utils.dateparse import parse_date
 from collections import defaultdict
 from account.models import TenantUser
 from django.contrib import messages
+from django.core.paginator import Paginator
+
 import requests
 import base64
 
@@ -236,91 +238,81 @@ def student_list(request):
 
 
 
-def BootStrapFilterView(request):
-    if request.user.is_authenticated:
-        tenant = getattr(request, 'tenant', None)
-        tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
-
-        # Fetch tenant from the request
-        if tenant:
-            print("Tenant found")
-            qs = PersonalInfo.objects.filter(tenant=tenant)  # Filter by tenant
-            if tenant_user and tenant_user.teacher_profile:
-                print('User is a teacher')
-                qs = qs.filter(teacher=tenant_user.teacher_profile)
-            else:
-                qs = PersonalInfo.objects.filter(tenant=tenant)
-            group = Group.objects.filter(tenant=tenant)  # Filter groups by tenant
-        else:
-            print('No tenant')
-            qs = PersonalInfo.objects.all()  # Fetch all records when no tenant
-            group = Group.objects.all()  # Fetch all groups when no tenant
-        teachers = Teacher.objects.filter(tenant=tenant) if tenant else Teacher.objects.all()
-    else:
-        qs = PersonalInfo.objects.none()  # No data for unauthenticated users
-        group = []
-        teachers = []
-
-    tenants = Tenant.objects.all()
-
-    # Add filtering logic based on GET parameters
-    status_choices = PersonalInfo.status_choices
-    language_choices = PersonalInfo.languages
-    source_choices = PersonalInfo.source_choices
-    name_contains_query = request.GET.get('name_contains')
-    status_contains_query = request.GET.get('status_contains')
-    group_contains_query = request.GET.get('group_contains')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    balance_filter = request.GET.get('balance_filter')
-    tenant_filter = request.GET.get('tenant_filter')
-
-    if name_contains_query:
-        qs = qs.filter(name__icontains=name_contains_query)
-    if status_contains_query:
-        qs = qs.filter(status__iexact=status_contains_query)
-    if group_contains_query:
-        qs = qs.filter(group__id=group_contains_query)
-    if balance_filter == 'positive':
-        qs = qs.filter(balance__gte=0)
-    elif balance_filter == 'negative':
-        qs = qs.filter(balance__lt=0)
-    if tenant_filter:
-        qs = qs.filter(tenant_id=tenant_filter)
-
-    def convert_date(date_str):
+def convert_date(date_str):
+    """Convert a date string in 'dd-mm-yyyy' format to a date object."""
+    try:
         return datetime.strptime(date_str, '%d-%m-%Y').date()
+    except (ValueError, TypeError):
+        return None
 
-    # Filter by date
-    if start_date:
-        try:
-            start_date = convert_date(start_date)
-            qs = qs.filter(first_lesson_day__gte=start_date)
-        except ValueError:
-            pass
-    if end_date:
-        try:
-            end_date = convert_date(end_date)
-            qs = qs.filter(first_lesson_day__lte=end_date)
-        except ValueError:
-            pass
+def BootStrapFilterView(request):
+    if not request.user.is_authenticated:
+        return render(request, 'student/student-search.html', {
+            'queryset': PersonalInfo.objects.none(),
+            'groups': [],
+            'statuses': PersonalInfo.status_choices,
+            'teachers': [],
+            'sources': PersonalInfo.source_choices,
+            'languages': PersonalInfo.languages,
+            'tenant_user': None,
+            'tenants': Tenant.objects.all(),
+        })
 
-    if start_date and not end_date:
-        qs = qs.filter(first_lesson_day=start_date)
-    elif end_date and not start_date:
-        qs = qs.filter(first_lesson_day=end_date)
-    elif start_date and end_date:
-        qs = qs.filter(first_lesson_day__range=[start_date, end_date])
+    tenant = getattr(request, 'tenant', None)
+    tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
 
+    # Base querysets
+    personal_info_qs = PersonalInfo.objects.filter(tenant=tenant) if tenant else PersonalInfo.objects.all()
+    paginator = Paginator(personal_info_qs, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    group_qs = Group.objects.filter(tenant=tenant) if tenant else Group.objects.all()
+    teacher_qs = Teacher.objects.filter(tenant=tenant) if tenant else Teacher.objects.all()
+    tenant_qs = Tenant.objects.all()
+
+    # Adjust personal_info_qs based on the user's profile
+    if tenant_user and tenant_user.teacher_profile:
+        personal_info_qs = personal_info_qs.filter(teacher=tenant_user.teacher_profile)
+
+    # Apply filters from GET parameters
+    filters = {
+        'name__icontains': request.GET.get('name_contains'),
+        'status__iexact': request.GET.get('status_contains'),
+        'group__id': request.GET.get('group_contains'),
+        'tenant_id': request.GET.get('tenant_filter'),
+    }
+    # Remove empty filters
+    filters = {key: value for key, value in filters.items() if value}
+    personal_info_qs = personal_info_qs.filter(**filters)
+
+    # Handle balance filter
+    balance_filter = request.GET.get('balance_filter')
+    if balance_filter == 'positive':
+        personal_info_qs = personal_info_qs.filter(balance__gte=0)
+    elif balance_filter == 'negative':
+        personal_info_qs = personal_info_qs.filter(balance__lt=0)
+
+    # Handle date filters
+    start_date = convert_date(request.GET.get('start_date'))
+    end_date = convert_date(request.GET.get('end_date'))
+
+    if start_date and end_date:
+        personal_info_qs = personal_info_qs.filter(first_lesson_day__range=[start_date, end_date])
+    elif start_date:
+        personal_info_qs = personal_info_qs.filter(first_lesson_day__gte=start_date)
+    elif end_date:
+        personal_info_qs = personal_info_qs.filter(first_lesson_day__lte=end_date)
+
+    # Prepare context for the template
     context = {
-        'queryset': qs,
-        'groups': group,
-        'statuses': status_choices,
-        'teachers': teachers,
-        'sources': source_choices,
-        'languages': language_choices,
+        'page_obj': page_obj,
+        'groups': group_qs,
+        'statuses': PersonalInfo.status_choices,
+        'teachers': teacher_qs,
+        'sources': PersonalInfo.source_choices,
+        'languages': PersonalInfo.languages,
         'tenant_user': tenant_user,
-        'tenants': tenants
+        'tenants': tenant_qs,
     }
     return render(request, 'student/student-search.html', context)
 
@@ -516,20 +508,25 @@ def balance_update(request):
         student_id = request.POST.get("student_id")
         amount = request.POST.get("amount")
 
+        if not student_id or not amount:
+            return JsonResponse({"success": False, "error": "Missing required fields."})
+
         try:
-            student = PersonalInfo.objects.get(id=student_id)
+            # Get the student
+            student = get_object_or_404(PersonalInfo, id=student_id)
 
-            balance = Balance.objects.get(student_id=student)
-            balance.auth_user = request.user  # Set the updating user
-            balance.amount += int(amount)
-            balance.save()
-            return JsonResponse({"success": True})
-        except Balance.DoesNotExist:
-            student = PersonalInfo.objects.get(id=student_id)
-            Balance.objects.create(student=student,
-                                             amount=amount)
+            # Update the balance field in PersonalInfo
+            student.balance = (student.balance or 0) + int(amount)
+            student.save()
+
+            return JsonResponse({"success": True, "new_balance": student.balance})
+
+        except PersonalInfo.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Student does not exist."})
+        except ValueError:
+            return JsonResponse({"success": False, "error": "Invalid amount format."})
+
     return JsonResponse({"success": False, "error": "Invalid request method."})
-
 
 def add_expense_view(request):
     # Get the tenant associated with the current logged-in user
