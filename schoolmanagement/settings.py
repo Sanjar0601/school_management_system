@@ -103,7 +103,7 @@ WSGI_APPLICATION = 'schoolmanagement.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'real_database',
+        'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',
