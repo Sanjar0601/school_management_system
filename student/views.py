@@ -263,9 +263,6 @@ def BootStrapFilterView(request):
 
     # Base querysets
     personal_info_qs = PersonalInfo.objects.filter(tenant=tenant) if tenant else PersonalInfo.objects.all()
-    paginator = Paginator(personal_info_qs, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
     group_qs = Group.objects.filter(tenant=tenant) if tenant else Group.objects.all()
     teacher_qs = Teacher.objects.filter(tenant=tenant) if tenant else Teacher.objects.all()
     tenant_qs = Tenant.objects.all()
@@ -302,6 +299,11 @@ def BootStrapFilterView(request):
         personal_info_qs = personal_info_qs.filter(first_lesson_day__gte=start_date)
     elif end_date:
         personal_info_qs = personal_info_qs.filter(first_lesson_day__lte=end_date)
+
+    # Apply pagination to the filtered queryset
+    paginator = Paginator(personal_info_qs, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     # Prepare context for the template
     context = {
