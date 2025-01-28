@@ -17,7 +17,7 @@ from collections import defaultdict
 from account.models import TenantUser
 from django.contrib import messages
 from django.core.paginator import Paginator
-
+from urllib.parse import urlencode
 import requests
 import base64
 
@@ -237,13 +237,18 @@ def student_list(request):
 
 
 
-
 def convert_date(date_str):
-    """Convert a date string in 'dd-mm-yyyy' format to a date object."""
-    try:
-        return datetime.strptime(date_str, '%d-%m-%Y').date()
-    except (ValueError, TypeError):
-        return None
+    if date_str:
+        try:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            print(f"Converted {date_str} to {date_obj}")  # Debug print
+            return date_obj
+        except ValueError:
+            print(f"Failed to convert {date_str}")  # Debug print
+            return None
+    return None
+
+
 
 def BootStrapFilterView(request):
     if not request.user.is_authenticated:
@@ -260,11 +265,13 @@ def BootStrapFilterView(request):
 
     tenant = getattr(request, 'tenant', None)
     tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
-
     # Base querysets
-    personal_info_qs = PersonalInfo.objects.filter(tenant=tenant) if tenant else PersonalInfo.objects.all()
-    group_qs = Group.objects.filter(tenant=tenant) if tenant else Group.objects.all()
-    teacher_qs = Teacher.objects.filter(tenant=tenant) if tenant else Teacher.objects.all()
+    personal_info_qs = (PersonalInfo.objects.filter(tenant=tenant).
+                        select_related('tenant', 'teacher', 'group')) \
+        if tenant else (PersonalInfo.objects.all().
+                        select_related('tenant', 'teacher', 'group'))
+    group_qs = Group.objects.filter(tenant=tenant).select_related('teacher', 'tenant') if tenant else Group.objects.all().select_related('teacher', 'tenant')
+    teacher_qs = Teacher.objects.filter(tenant=tenant).select_related('tenant').values('name') if tenant else Teacher.objects.all().select_related('tenant')
     tenant_qs = Tenant.objects.all()
 
     # Adjust personal_info_qs based on the user's profile
@@ -281,7 +288,6 @@ def BootStrapFilterView(request):
     # Remove empty filters
     filters = {key: value for key, value in filters.items() if value}
     personal_info_qs = personal_info_qs.filter(**filters)
-
     # Handle balance filter
     balance_filter = request.GET.get('balance_filter')
     if balance_filter == 'positive':
@@ -305,6 +311,19 @@ def BootStrapFilterView(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Get the current query parameters
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']  # Remove the 'page' parameter to avoid duplication
+
+    # Ensure start_date and end_date are included in query_params
+    print(f"start_date: {start_date}, end_date: {end_date}")  # Debug print
+
+    if 'start_date' in request.GET:
+        query_params['start_date'] = request.GET['start_date']
+    if 'end_date' in request.GET:
+        query_params['end_date'] = request.GET['end_date']
+
     # Prepare context for the template
     context = {
         'page_obj': page_obj,
@@ -315,6 +334,7 @@ def BootStrapFilterView(request):
         'languages': PersonalInfo.languages,
         'tenant_user': tenant_user,
         'tenants': tenant_qs,
+        'query_params': urlencode(query_params),  # Pass the query parameters to the template
     }
     return render(request, 'student/student-search.html', context)
 

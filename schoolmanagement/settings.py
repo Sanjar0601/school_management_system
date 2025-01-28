@@ -172,6 +172,7 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or your Redis/RabbitMQ URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERY_RESULT_BACKEND = 'django-db'
 
 # Redis cache configuration
 CACHES = {

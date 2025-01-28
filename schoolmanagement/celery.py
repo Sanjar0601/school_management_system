@@ -1,24 +1,21 @@
-import os
+from __future__ import absolute_import, unicode_literals
 from celery import Celery
+from django.conf import settings
+import os
 
-# Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'schoolmanagement.settings')
 
-app = Celery('schoolmanagement')
-
-# Load task modules from all registered Django app configs.
+# Create a Celery instance
+app = Celery('schoolmanagement', broker='redis://localhost:6379/0')  # Replace with your broker URL
+app.conf.timezone = 'UTC'
 app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks()
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+# Optional: Load custom settings
 
 
-# Optional: Define a debug task for testing purposes
-@app.task(bind=True)
-def debug_task(self):
-    print(f'Request: {self.request!r}')
-
-# Importing your tasks if you have any defined in other modules
-# Example:
-# from your_app.tasks import *  # You can import specific tasks or modules as needed
-
-# (Optional) You can define periodic tasks in the Celery beat schedule if required.
-# For example, to automatically deduct balances every month:
+app.conf.task_serializer = 'json'
+app.conf.result_serializer = 'json'
+app.conf.accept_content = ['json']
+app.conf.timezone = 'UTC'
+app.conf.enable_utc = True
