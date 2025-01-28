@@ -583,9 +583,11 @@ class ExpenseListView(ListView):
     def get_queryset(self):
         tenant = getattr(self.request, 'tenant', None)
         if tenant:
-            queryset = Expense.objects.filter(tenant=tenant)
+            queryset = (Expense.objects.filter(tenant=tenant).
+                        select_related('auth_user', 'tenant').order_by('-timestamp'))
         else:
-            queryset = Expense.objects.all()
+            queryset = (Expense.objects.all().
+                        select_related('auth_user', 'tenant').order_by('-timestamp'))
         filtered = False
 
         # Get filtering criteria from GET request parameters
