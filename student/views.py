@@ -16,7 +16,7 @@ from django.utils.dateparse import parse_date
 from collections import defaultdict
 from account.models import TenantUser
 from django.contrib import messages
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from urllib.parse import urlencode
 import requests
 import base64
@@ -152,74 +152,79 @@ def delete_group(request):
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
 
+
+
+
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
-    # Get the current TenantUser (if exists)
-    tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
-    # Filter for students with specific statuses
-    students_filter = PersonalInfo.objects.filter(status__in=['Active', 'Tekin'])
+    tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()  # Get the TenantUser instance
+    students_filter = PersonalInfo.objects.filter(status__in=['Active', 'Tekin'])  # Base filter for students
+
+    # Base queryset for groups
+    students_in_group = Group.objects.prefetch_related(
+        Prefetch('students', queryset=students_filter)
+    ).annotate(
+        group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
+    ).distinct()
+
+    # Apply tenant-specific filtering
     if tenant and tenant_user:
         if tenant_user.is_teacher:
-            # Teacher can only see groups where they are assigned as a teacher
-            students_in_group = Group.objects.filter(
+            # Teachers see only groups they teach
+            students_in_group = students_in_group.filter(
                 tenant=tenant,
-                teacher=tenant_user.teacher_profile,
-                students__status__in=['Active', 'Tekin']
-            ).prefetch_related(
-                Prefetch('students', queryset=students_filter)
-            ).annotate(
-                group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
-            ).distinct()
-
-            teachers = Teacher.objects.filter(id=tenant_user.teacher_profile.id)  # Only the teacher themselves
+                teacher=tenant_user.teacher_profile
+            )
         else:
-            # Admin can see all groups within the tenant
-            students_in_group = Group.objects.filter(
-                tenant=tenant
-            ).prefetch_related(
-                Prefetch('students', queryset=students_filter)
-            ).annotate(
-                group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
-            ).distinct()
-            teachers = Teacher.objects.filter(tenant=tenant)  # Filter teachers by tenant
+            # Admins see all groups for the tenant
+            students_in_group = students_in_group.filter(tenant=tenant)
     else:
-        # When no tenant is set, fetch all groups and teachers without tenant filtering
-        students_in_group = Group.objects.filter(
-            students__status__in=['Active', 'Tekin']
-        ).prefetch_related(
-            Prefetch('students', queryset=students_filter)
-        ).annotate(
-            group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
-        ).distinct()
-        teachers = Teacher.objects.all()
-    # Tenant filtering logic from GET request
+        # No tenant context; fetch all groups
+        students_in_group = students_in_group.filter(students__status__in=['Active', 'Tekin'])
+
+    # Apply additional tenant filtering from query parameters
     tenant_filter = request.GET.get('tenant_filter')
     if tenant_filter:
-        students_in_group = Group.objects.filter(
-            tenant=tenant_filter,
-            students__status__in=['Active', 'Tekin']
-        ).prefetch_related(
-            Prefetch('students', queryset=students_filter)
-        ).annotate(
-            group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
-        ).distinct()
-    tenants = Tenant.objects.all()
-    days = Group.day_choices
-    # Get group ID for editing students
-    group_id = request.POST.get('group_id')
-    edit_group_students = PersonalInfo.objects.filter(
-        group=group_id, tenant=tenant, status__in=['Active', 'Tekin']
-    ) if group_id else None
+        students_in_group = students_in_group.filter(tenant=tenant_filter)
+
+    # Pagination
+    page = request.GET.get('page', 1)  # Get the page number from the query params
+    paginator = Paginator(students_in_group, 10)  # Paginate with 10 items per page
+
+    try:
+        students_in_group = paginator.page(page)
+    except PageNotAnInteger:
+        students_in_group = paginator.page(1)
+    except EmptyPage:
+        students_in_group = paginator.page(paginator.num_pages)
+
+    # Encode query parameters for reuse in pagination links
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        query_params.pop('page')  # Remove the 'page' parameter to avoid duplication
+    query_string = urlencode(query_params)
+
+    # Other context data
+    tenants = Tenant.objects.all()  # List of all tenants
+    days = Group.day_choices  # Day choices for groups
+    group_id = request.POST.get('group_id')  # Get group ID for editing students
+    edit_group_students = (
+        PersonalInfo.objects.filter(group=group_id, tenant=tenant, status__in=['Active', 'Tekin'])
+        if group_id else None
+    )
+
     context = {
-        'tenants': tenants,
-        'groups': students_in_group,
-        'teachers': teachers,
-        'days': days,
-        'tenant_user': tenant_user,
-        'edit_students': edit_group_students,
+        'tenants': tenants,  # List of tenants
+        'groups': students_in_group,  # Paginated group data
+        'teachers': Teacher.objects.filter(tenant=tenant) if tenant else Teacher.objects.all(),
+        'days': days,  # Day options
+        'tenant_user': tenant_user,  # Current tenant user info
+        'edit_students': edit_group_students,  # Students for editing
+        'query_string': query_string,  # Encoded query string for pagination
     }
 
     return render(request, 'student/group-list.html', context)
+
 
 
 def student_list(request):
@@ -450,17 +455,17 @@ def attendance_table(request):
     month_filter = request.GET.get('month')
 
     # Initialize attendance data and a flag to determine if data is present
-    attendance_data = Attendance.objects.select_related('student', 'group')
+    attendance_data = Attendance.objects.select_related('student', 'group', 'tenant')
     data_available = False
 
     # Apply filters if provided
-    if group_filter or month_filter:
+    if group_filter and month_filter:
         if group_filter:
-            attendance_data = attendance_data.filter(group_id=group_filter, student__status__in=['Active', 'Tekin'])
+            attendance_data = attendance_data.filter(group_id=group_filter, student__status__in=['Active', 'Tekin']).select_related('student', 'group', 'tenant')
 
         if month_filter:
             month_filter = int(month_filter)
-            attendance_data = attendance_data.filter(date__month=month_filter, student__status__in=['Active', 'Tekin'])
+            attendance_data = attendance_data.filter(date__month=month_filter, student__status__in=['Active', 'Tekin']).select_related('student', 'group', 'tenant')
 
         # Check if there are any records after filtering
         if attendance_data.exists():
@@ -482,7 +487,7 @@ def attendance_table(request):
         'students': students,
         'dates': dates,
         'attendance_by_student': attendance_by_student,
-        'groups': Group.objects.filter(tenant=tenant),
+        'groups': Group.objects.filter(tenant=tenant).select_related('teacher', 'tenant').order_by('teacher'),
         'months': [
             {'value': 1, 'name': 'January'},
             {'value': 2, 'name': 'February'},
