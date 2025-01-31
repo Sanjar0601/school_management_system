@@ -22,6 +22,7 @@ class Group(models.Model):
         return f'{self.teacher} | {self.name} | {self.day} | {self.time}'
 
 
+
 class PersonalInfo(models.Model):
     name = models.CharField(max_length=100)
     phone_no = models.CharField(max_length=100)
@@ -59,6 +60,7 @@ class PersonalInfo(models.Model):
     comment = models.CharField(max_length=200, null=True, blank=True)
     learning_duration = models.CharField(max_length=100, null=True, blank=True)
     objects = TenantAwareManager()
+    deleted_date = models.DateTimeField(null=True, blank=True)
     test = models.CharField(max_length=100, null=True, blank=True)
     languages = (
         ('Russian', 'Russian'),
@@ -81,6 +83,10 @@ class PersonalInfo(models.Model):
             old_instance = PersonalInfo.objects.filter(pk=self.pk).first()
             old_balance = old_instance.balance if old_instance else None
 
+        # Set the deleted_date if the status is 'Deleted'
+        if self.status == 'Deleted':
+            self.deleted_date = timezone.now()
+
         # Save the student
         super().save(*args, **kwargs)
 
@@ -101,8 +107,6 @@ class PersonalInfo(models.Model):
                 description='Balance updated',
             )
 
-
-
 class Balance(models.Model):
     student = models.ForeignKey('PersonalInfo', on_delete=models.CASCADE, related_name='transactions')
     last_transaction_date = models.DateTimeField(default=timezone.now)
@@ -122,9 +126,9 @@ class Balance(models.Model):
 
 
 class Attendance(models.Model):
-    student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE)
-    date = models.DateField(null=True, blank=True)
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    student = models.ForeignKey(PersonalInfo, on_delete=models.CASCADE, db_index=True)
+    date = models.DateField(null=True, blank=True, db_index=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, db_index=True)
     tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True)
     status = models.CharField(
         max_length=10,

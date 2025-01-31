@@ -243,15 +243,15 @@ def student_list(request):
 
 
 def convert_date(date_str):
-    if date_str:
-        try:
-            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-            print(f"Converted {date_str} to {date_obj}")  # Debug print
-            return date_obj
-        except ValueError:
-            print(f"Failed to convert {date_str}")  # Debug print
-            return None
-    return None
+    if not date_str:
+        return None
+    try:
+        # Parse the date string into a naive datetime
+        naive_date = datetime.strptime(date_str, '%Y-%m-%d')
+        # Make it timezone-aware
+        return timezone.make_aware(naive_date)
+    except ValueError:
+        return None
 
 
 
@@ -270,6 +270,7 @@ def BootStrapFilterView(request):
 
     tenant = getattr(request, 'tenant', None)
     tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
+
     # Base querysets
     personal_info_qs = (PersonalInfo.objects.filter(tenant=tenant).
                         select_related('tenant', 'teacher', 'group')) \
@@ -293,6 +294,7 @@ def BootStrapFilterView(request):
     # Remove empty filters
     filters = {key: value for key, value in filters.items() if value}
     personal_info_qs = personal_info_qs.filter(**filters)
+
     # Handle balance filter
     balance_filter = request.GET.get('balance_filter')
     if balance_filter == 'positive':
@@ -304,12 +306,16 @@ def BootStrapFilterView(request):
     start_date = convert_date(request.GET.get('start_date'))
     end_date = convert_date(request.GET.get('end_date'))
 
+    # Determine which date field to filter based on the status
+    status_filter = request.GET.get('status_contains')
+    date_field = 'deleted_date' if status_filter == 'Deleted' else 'first_lesson_day'
+
     if start_date and end_date:
-        personal_info_qs = personal_info_qs.filter(first_lesson_day__range=[start_date, end_date])
+        personal_info_qs = personal_info_qs.filter(**{f'{date_field}__range': [start_date, end_date]})
     elif start_date:
-        personal_info_qs = personal_info_qs.filter(first_lesson_day__gte=start_date)
+        personal_info_qs = personal_info_qs.filter(**{f'{date_field}__gte': start_date})
     elif end_date:
-        personal_info_qs = personal_info_qs.filter(first_lesson_day__lte=end_date)
+        personal_info_qs = personal_info_qs.filter(**{f'{date_field}__lte': end_date})
 
     # Apply pagination to the filtered queryset
     paginator = Paginator(personal_info_qs, 20)
@@ -342,7 +348,6 @@ def BootStrapFilterView(request):
         'query_params': urlencode(query_params),  # Pass the query parameters to the template
     }
     return render(request, 'student/student-search.html', context)
-
 
 class StudentDetailView(DetailView):
     model = PersonalInfo
@@ -449,45 +454,56 @@ class SaveAttendanceView(View):
 
 
 def attendance_table(request):
-    # Get filters from GET parameters
     tenant = getattr(request, 'tenant', None)
+    user = request.user
+
+    # Get the user's TenantUser object
+    tenant_user = TenantUser.objects.filter(user=user, tenant=tenant).select_related('tenant', 'user').first()
+
+    # Handle missing TenantUser cases
+    if not tenant_user:
+        return render(request, 'student/attendance_list.html', {'error': 'User does not belong to a tenant'})
+
     group_filter = request.GET.get('group')
     month_filter = request.GET.get('month')
 
-    # Initialize attendance data and a flag to determine if data is present
+    # Base QuerySet
     attendance_data = Attendance.objects.select_related('student', 'group', 'tenant')
-    data_available = False
 
-    # Apply filters if provided
-    if group_filter and month_filter:
-        if group_filter:
-            attendance_data = attendance_data.filter(group_id=group_filter, student__status__in=['Active', 'Tekin']).select_related('student', 'group', 'tenant')
+    # Apply visibility rules based on user role
+    if tenant_user.is_teacher:
+        # Teachers can only see their own attendance data
+        attendance_data = attendance_data.filter(group__teacher=tenant_user.teacher_profile)
+        groups = Group.objects.filter(tenant=tenant, teacher=tenant_user.teacher_profile).prefetch_related('teacher')
+    else:
+        # Admins can see all attendance data for their tenant
+        attendance_data = attendance_data.filter(group__tenant=tenant)
+        groups = Group.objects.filter(tenant=tenant).prefetch_related('teacher')
 
-        if month_filter:
-            month_filter = int(month_filter)
-            attendance_data = attendance_data.filter(date__month=month_filter, student__status__in=['Active', 'Tekin']).select_related('student', 'group', 'tenant')
+    # Ensure attendance is only shown when both filters are applied
+    data_available = bool(group_filter and month_filter)
 
-        # Check if there are any records after filtering
-        if attendance_data.exists():
-            data_available = True
+    if data_available:
+        attendance_data = attendance_data.filter(group_id=group_filter, date__month=int(month_filter))
 
-    # Get unique students and dates only if there's data available
+        attendance_data = attendance_data.prefetch_related(
+            Prefetch('student', queryset=PersonalInfo.objects.only('name')),
+            Prefetch('group', queryset=Group.objects.only('name', 'teacher__name'))
+        )
     students = attendance_data.values('student__name').distinct().order_by('student__name') if data_available else []
     dates = attendance_data.values_list('date', 'unit').distinct().order_by('date') if data_available else []
 
-    # Group attendance by student and date if data is available
     attendance_by_student = defaultdict(dict)
     if data_available:
         for record in attendance_data:
             key = (record.date, record.unit)
             attendance_by_student[record.student.name][key] = record.status
 
-    # Prepare context for rendering
     context = {
         'students': students,
         'dates': dates,
         'attendance_by_student': attendance_by_student,
-        'groups': Group.objects.filter(tenant=tenant).select_related('teacher', 'tenant').order_by('teacher'),
+        'groups': groups,
         'months': [
             {'value': 1, 'name': 'January'},
             {'value': 2, 'name': 'February'},
@@ -502,11 +518,9 @@ def attendance_table(request):
             {'value': 11, 'name': 'November'},
             {'value': 12, 'name': 'December'},
         ],
-        'data_available': data_available,  # Flag to indicate if data is available
+        'data_available': data_available,  # Ensures table is only displayed when both filters are applied
     }
-
     return render(request, 'student/attendance_list.html', context)
-
 
 @csrf_exempt
 def edit_group_view(request):
@@ -575,10 +589,33 @@ def add_expense_view(request):
         form = ExpenseForm()  # Initialize an empty form for GET requests
     return render(request, 'student/add_expense.html', {'form': form})
 
+
 class ExpenseListView(ListView):
     model = Expense
-    template_name = 'student/expense_list.html'  # Adjust the template path if necessary
+    template_name = 'student/expense_list.html'
     context_object_name = 'expenses'
+    paginate_by = 20  # Number of items per page
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)  # This adds `page_obj` to the context
+        context['tenants'] = Tenant.objects.all()
+
+        # Add query parameters to context for pagination links
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']  # Remove the 'page' parameter to avoid duplication
+        context['query_params'] = query_params.urlencode()
+
+        return context
+
+    def get_queryset(self):
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant:
+            queryset = (Expense.objects.filter(tenant=tenant).
+                        select_related('auth_user', 'tenant').order_by('-timestamp'))
+        else:
+            queryset = (Expense.objects.all().
+                        select_related('auth_user', 'tenant').order_by('-timestamp'))
 
     def get_queryset(self):
         tenant = getattr(self.request, 'tenant', None)
@@ -598,6 +635,7 @@ class ExpenseListView(ListView):
         min_amount = self.request.GET.get('min_amount')
         max_amount = self.request.GET.get('max_amount')
         branch = self.request.GET.get('branch')
+
         # Apply filters if parameters are provided
         if category:
             queryset = queryset.filter(category=category)
@@ -628,7 +666,7 @@ class ExpenseListView(ListView):
             filtered = True
 
         if branch:
-            queryset = queryset.filter(tenant=tenant)
+            queryset = queryset.filter(tenant_id=branch)
             filtered = True
 
         # Add success/failure messages based on filtering results
@@ -642,4 +680,23 @@ class ExpenseListView(ListView):
 
         return queryset
 
+
+def update_expense(request):
+    if request.method == 'POST':
+        expense_id = request.POST.get('expense_id')
+        comment = request.POST.get('comment')
+        category = request.POST.get('category')
+        types = request.POST.get('types')
+        amount_spent = request.POST.get('amount_spent')
+
+        expense = get_object_or_404(Expense, id=expense_id)
+
+        expense.comment = comment
+        expense.category = category
+        expense.types = types
+        expense.amount_spent = amount_spent
+        expense.save()
+
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
 
