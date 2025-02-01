@@ -103,105 +103,108 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div style="overflow-x: auto">
-                        <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
-                            <thead>
-                                <tr role="row">
-                                    <th>№</th>
-                                    <th>Name</th>
-                                    <th>Group</th>
-                                    <th>Teacher</th>
-                                    <th>Comment</th>
-                                    <th>Phone</th>
-                                    <th>Balance</th>
-                                    {% if not tenant_user.teacher_profile or request.user.is_superuser%}
-
-                                    <th>Balance</th>
-                                    {% endif %}
-                                    <th>Status</th>
-                                    {% if not tenant_user.teacher_profile %}
-                                    <th>Actions</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in page_obj %}
-                                    <tr role="row" class="odd">
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ student.name }}</td>
-                                        <td>{{ student.group }}</td>
-                                        <td>{{student.teacher.name}}</td>
-                                        <td>{{student.comment}}</td>
-                                        <td>{{student.phone_no}}</td>
-                                        <td>{{student.balance}}</td>
-                                        {% if not tenant_user.teacher_profile %}
-                                        <td>
-                                            <button type="button" data-balance="{{student.balance}}" data-student-id="{{student.id}}"
-                                                    class="{% if student.balance >= 0 %} btn btn-outline-success {% else %} btn-outline-danger {% endif %}" data-toggle="modal" data-target="#editBalanceModal" >
-                                                {{student.balance}}
-                                            </button>
-                                        </td>
+                         <table class="table table-striped table-bordered datatable dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info" style="border-collapse: collapse !important">
+                                <thead>
+                                    <tr role="row">
+                                        <th>№</th>
+                                        <th>Name</th>
+                                        <th>Group</th>
+                                        <th>Teacher</th>
+                                        <th>Comment</th>
+                                        <th>Phone</th>
+                                        <th>Balance</th>
+                                        {% if not tenant_user.teacher_profile or request.user.is_superuser %}
+                                            <th>Balance</th>
                                         {% endif %}
-                                        <td>
-                                            <span style="
-
-
-                {% if student.status == 'Unpaid' %}
-                    background-color: red;
-                    color: black;
-                {% elif student.status == 'Another Branch' %}
-                    background-color: yellow;
-                    color: black;
-                {% elif student.status == 'Active' %}
-                    background-color: green;
-                    color: black;
-                {% elif student.status == 'Free' %}
-                    background-color: green;
-                    color: black;
-                {% elif student.status == 'First Lesson' %}
-                    background-color: orange;
-                    color: black;
-                {% elif student.status == 'Deactive' %}
-                    background-color: violet;
-                    color: black;
-                {% elif student.status == 'Comer' %}
-                    background-color: pink;
-                    color: white;
-                {% elif student.status == 'Wrong Number' %}
-                    background-color: white;
-                    color: black;
-                {% else %}
-                    background-color: gray;
-                    color: white;
-                {% endif %}
-                padding: 5px;">
-                {{ student.status }}
-            </span>
-                                        </td>
-                                                                                    {% if not tenant_user.teacher_profile %}
-
-                                        <td>
-
-                                            <button class="btn btn-sm btn-warning edit-btn" data-toggle="modal" data-target="#editModal"
-                                                    data-student-id="{{ student.id }}"
-                                                    data-status="{{ student.status }}"
-                                                    data-group="{{ student.group.id }}"
-                                                    data-teacher="{{ student.teacher.id }}"
-                                                    data-source="{{ student.source }}"
-                                                    data-comment="{{ student.comment }}"
-                                                    data-phone="{{ student.phone_no }}"
-                                                    data-goal="{{ student.goal }}"
-                                                    data-language="{{ student.language }}"
-                                                    data-test="{{ student.test }}"
-                                                    data-first_lesson_day="{{ student.first_lesson_day|date:'Y-m-d' }}"
-                                                    data-name="{{ student.name }}">
-                                                Edit
-                                            </button>
-                                            {% endif %}
-                                        </td>
+                                        <th>Status</th>
+                                        <!-- Add Deleted Date column if filtering by 'Deleted' status -->
+                                        {% if request.GET.status_contains == 'Deleted' %}
+                                            <th>Deleted Date</th>
+                                        {% endif %}
+                                        {% if not tenant_user.teacher_profile %}
+                                            <th>Actions</th>
+                                        {% endif %}
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for student in page_obj %}
+                                        <tr role="row" class="odd">
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ student.name }}</td>
+                                            <td>{{ student.group }}</td>
+                                            <td>{{ student.teacher.name }}</td>
+                                            <td>{{ student.comment }}</td>
+                                            <td>{{ student.phone_no }}</td>
+                                            <td>{{ student.balance }}</td>
+                                            {% if not tenant_user.teacher_profile %}
+                                                <td>
+                                                    <button type="button" data-balance="{{ student.balance }}" data-student-id="{{ student.id }}"
+                                                            class="{% if student.balance >= 0 %} btn btn-outline-success {% else %} btn-outline-danger {% endif %}" data-toggle="modal" data-target="#editBalanceModal">
+                                                        {{ student.balance }}
+                                                    </button>
+                                                </td>
+                                            {% endif %}
+                                            <td>
+                                                <span style="
+                                                    {% if student.status == 'Unpaid' %}
+                                                        background-color: red;
+                                                        color: black;
+                                                    {% elif student.status == 'Another Branch' %}
+                                                        background-color: yellow;
+                                                        color: black;
+                                                    {% elif student.status == 'Active' %}
+                                                        background-color: green;
+                                                        color: black;
+                                                    {% elif student.status == 'Free' %}
+                                                        background-color: green;
+                                                        color: black;
+                                                    {% elif student.status == 'First Lesson' %}
+                                                        background-color: orange;
+                                                        color: black;
+                                                    {% elif student.status == 'Deactive' %}
+                                                        background-color: violet;
+                                                        color: black;
+                                                    {% elif student.status == 'Comer' %}
+                                                        background-color: pink;
+                                                        color: white;
+                                                    {% elif student.status == 'Wrong Number' %}
+                                                        background-color: white;
+                                                        color: black;
+                                                    {% else %}
+                                                        background-color: gray;
+                                                        color: white;
+                                                    {% endif %}
+                                                    padding: 5px;">
+                                                    {{ student.status }}
+                                                </span>
+                                            </td>
+                                            <!-- Add Deleted Date cell if filtering by 'Deleted' status -->
+                                            {% if request.GET.status_contains == 'Deleted' %}
+                                                <td>{{ student.deleted_date|date:"Y-m-d H:i" }}</td>
+                                            {% endif %}
+                                        {% if not tenant_user.teacher_profile or request.user.is_superuser %}
+                                                <td>
+                                                    <button class="btn btn-sm btn-warning edit-btn" data-toggle="modal" data-target="#editModal"
+                                                            data-student-id="{{ student.id }}"
+                                                            data-status="{{ student.status }}"
+                                                            data-group="{{ student.group.id }}"
+                                                            data-teacher="{{ student.teacher.id }}"
+                                                            data-source="{{ student.source }}"
+                                                            data-comment="{{ student.comment }}"
+                                                            data-phone="{{ student.phone_no }}"
+                                                            data-goal="{{ student.goal }}"
+                                                            data-language="{{ student.language }}"
+                                                            data-test="{{ student.test }}"
+                                                            data-first_lesson_day="{{ student.first_lesson_day|date:'Y-m-d' }}"
+                                                            data-name="{{ student.name }}">
+                                                        Edit
+                                                    </button>
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                             <div class="pagination">
                                 <!-- Show Previous page link if not on the first page -->
                                 {% if page_obj.has_previous %}
