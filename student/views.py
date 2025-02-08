@@ -4,7 +4,10 @@ from .message_templates import *
 from .models import *
 from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
-from django.db.models import Q, Count, Prefetch
+from django.db.models import Prefetch
+from django.db.models import OuterRef, Subquery, Count, Q, Value, IntegerField
+from django.db.models.functions import Coalesce
+
 from django.views.generic import DetailView
 from django.views import View
 from django.http import JsonResponse
@@ -153,19 +156,31 @@ def delete_group(request):
 
 
 
-
-
 def group_list(request):
     tenant = getattr(request, 'tenant', None)  # Get the current tenant
     tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()  # Get the TenantUser instance
-    students_filter = PersonalInfo.objects.filter(status__in=['Active', 'Tekin'])  # Base filter for students
+    is_superuser = request.user.is_superuser  # Check if the user is a superuser
+
+    # Subquery to count students in each group with status 'Active' or 'Tekin'
+    student_count_subquery = PersonalInfo.objects.filter(
+        group=OuterRef('pk'),  # Relate to the Group model
+        status__in=['Active', 'Tekin']
+    )
+
+    # Apply tenant filtering only if tenant is not None and user is not a superuser
+    if tenant and not is_superuser:
+        student_count_subquery = student_count_subquery.filter(tenant=tenant)
+
+    student_count_subquery = student_count_subquery.values('group').annotate(count=Count('pk')).values('count')
 
     # Base queryset for groups
-    students_in_group = Group.objects.prefetch_related(
-        Prefetch('students', queryset=students_filter)
-    ).annotate(
-        group_count=Count('students', filter=Q(students__status__in=['Active', 'Tekin']))
+    students_in_group = Group.objects.annotate(
+        group_count=Coalesce(Subquery(student_count_subquery, output_field=IntegerField()), Value(0))
     ).distinct()
+
+    # Debug: Print the queryset to verify group_count
+    for group in students_in_group:
+        print(f"Group: {group.name}, Student Count: {group.group_count}")
 
     # Apply tenant-specific filtering
     if tenant and tenant_user:
@@ -178,8 +193,8 @@ def group_list(request):
         else:
             # Admins see all groups for the tenant
             students_in_group = students_in_group.filter(tenant=tenant)
-    else:
-        # No tenant context; fetch all groups
+    elif not is_superuser:
+        # No tenant context; fetch all groups with students in 'Active' or 'Tekin' status
         students_in_group = students_in_group.filter(students__status__in=['Active', 'Tekin'])
 
     # Apply additional tenant filtering from query parameters
@@ -221,11 +236,10 @@ def group_list(request):
         'tenant_user': tenant_user,  # Current tenant user info
         'edit_students': edit_group_students,  # Students for editing
         'query_string': query_string,  # Encoded query string for pagination
+        'is_superadmin': is_superuser,  # Pass superuser status to the template
     }
 
     return render(request, 'student/group-list.html', context)
-
-
 
 def student_list(request):
     pass
@@ -466,6 +480,7 @@ def attendance_table(request):
 
     group_filter = request.GET.get('group')
     month_filter = request.GET.get('month')
+    year_filter = request.GET.get('year')
 
     # Base QuerySet
     attendance_data = Attendance.objects.select_related('student', 'group', 'tenant')
@@ -480,16 +495,21 @@ def attendance_table(request):
         attendance_data = attendance_data.filter(group__tenant=tenant)
         groups = Group.objects.filter(tenant=tenant).prefetch_related('teacher')
 
-    # Ensure attendance is only shown when both filters are applied
-    data_available = bool(group_filter and month_filter)
+    # Ensure attendance is only shown when all filters are applied
+    data_available = bool(group_filter and month_filter and year_filter)
 
     if data_available:
-        attendance_data = attendance_data.filter(group_id=group_filter, date__month=int(month_filter))
+        attendance_data = attendance_data.filter(
+            group_id=group_filter,
+            date__month=int(month_filter),
+            date__year=int(year_filter)
+        )
 
         attendance_data = attendance_data.prefetch_related(
             Prefetch('student', queryset=PersonalInfo.objects.only('name')),
             Prefetch('group', queryset=Group.objects.only('name', 'teacher__name'))
         )
+
     students = attendance_data.values('student__name').distinct().order_by('student__name') if data_available else []
     dates = attendance_data.values_list('date', 'unit').distinct().order_by('date') if data_available else []
 
@@ -498,6 +518,9 @@ def attendance_table(request):
         for record in attendance_data:
             key = (record.date, record.unit)
             attendance_by_student[record.student.name][key] = record.status
+
+    # Get the current year for the year filter
+    current_year = datetime.now().year
 
     context = {
         'students': students,
@@ -518,9 +541,11 @@ def attendance_table(request):
             {'value': 11, 'name': 'November'},
             {'value': 12, 'name': 'December'},
         ],
-        'data_available': data_available,  # Ensures table is only displayed when both filters are applied
+        'years': range(current_year - 5, current_year + 1),  # Add the last 5 years and the current year
+        'data_available': data_available,  # Ensures table is only displayed when all filters are applied
     }
     return render(request, 'student/attendance_list.html', context)
+
 
 @csrf_exempt
 def edit_group_view(request):

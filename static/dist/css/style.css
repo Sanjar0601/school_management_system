@@ -9479,3 +9479,10 @@ hr.transparent {
 .profile-info {
 
 }
+
+th:nth-child(1),
+    td:nth-child(1) {
+        width: 80px; /* Adjust this value as needed */
+        white-space: nowrap; /* Prevent text from wrapping */
+        text-align: center; /* Center-align the text */
+    }
