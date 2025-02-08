@@ -6,8 +6,7 @@ from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
 from django.db.models import Prefetch
 from django.db.models import OuterRef, Subquery, Count, Q, Value, IntegerField
-from django.db.models.functions import Coalesce
-
+from django.db.models.functions import Coalesce, ExtractYear
 from django.views.generic import DetailView
 from django.views import View
 from django.http import JsonResponse
@@ -467,6 +466,7 @@ class SaveAttendanceView(View):
             print(f"Error sending SMS to {phone_number}: {e}")
 
 
+
 def attendance_table(request):
     tenant = getattr(request, 'tenant', None)
     user = request.user
@@ -495,6 +495,14 @@ def attendance_table(request):
         attendance_data = attendance_data.filter(group__tenant=tenant)
         groups = Group.objects.filter(tenant=tenant).prefetch_related('teacher')
 
+    # Extract distinct years from the attendance records
+    existing_years = (
+        attendance_data.annotate(year=ExtractYear('date'))
+        .values_list('year', flat=True)
+        .distinct()
+        .order_by('year')
+    )
+
     # Ensure attendance is only shown when all filters are applied
     data_available = bool(group_filter and month_filter and year_filter)
 
@@ -519,9 +527,6 @@ def attendance_table(request):
             key = (record.date, record.unit)
             attendance_by_student[record.student.name][key] = record.status
 
-    # Get the current year for the year filter
-    current_year = datetime.now().year
-
     context = {
         'students': students,
         'dates': dates,
@@ -541,11 +546,10 @@ def attendance_table(request):
             {'value': 11, 'name': 'November'},
             {'value': 12, 'name': 'December'},
         ],
-        'years': range(current_year - 5, current_year + 1),  # Add the last 5 years and the current year
+        'years': existing_years,  # Use the distinct years from the records
         'data_available': data_available,  # Ensures table is only displayed when all filters are applied
     }
     return render(request, 'student/attendance_list.html', context)
-
 
 @csrf_exempt
 def edit_group_view(request):
