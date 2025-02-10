@@ -5,7 +5,7 @@ from .models import *
 from teacher.models import PersonalInfo as Teacher
 from django.views.generic import ListView
 from django.db.models import Prefetch
-from django.db.models import OuterRef, Subquery, Count, Q, Value, IntegerField
+from django.db.models import OuterRef, Subquery, Count, Q, Value, IntegerField, Sum, F
 from django.db.models.functions import Coalesce, ExtractYear
 from django.views.generic import DetailView
 from django.views import View
@@ -19,6 +19,7 @@ from collections import defaultdict
 from account.models import TenantUser
 from django.contrib import messages
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
+from datetime import timedelta
 from urllib.parse import urlencode
 import requests
 import base64
@@ -304,8 +305,11 @@ def BootStrapFilterView(request):
         'group__id': request.GET.get('group_contains'),
         'tenant_id': request.GET.get('tenant_filter'),
     }
+
     # Remove empty filters
     filters = {key: value for key, value in filters.items() if value}
+    if 'status__iexact' not in filters:
+        filters['status__iexact'] = 'Active'  # Default to active students
     personal_info_qs = personal_info_qs.filter(**filters)
 
     # Handle balance filter
@@ -329,6 +333,16 @@ def BootStrapFilterView(request):
         personal_info_qs = personal_info_qs.filter(**{f'{date_field}__gte': start_date})
     elif end_date:
         personal_info_qs = personal_info_qs.filter(**{f'{date_field}__lte': end_date})
+
+    # Annotate the queryset with the next payment date
+    last_transaction_subquery = Balance.objects.filter(
+        student=OuterRef('pk')
+    ).order_by('-last_transaction_date').values('last_transaction_date')[:1]
+
+    personal_info_qs = personal_info_qs.annotate(
+        last_transaction_date=Subquery(last_transaction_subquery),
+        next_payment_date=F('last_transaction_date') + timedelta(days=30)
+    )
 
     # Apply pagination to the filtered queryset
     paginator = Paginator(personal_info_qs, 20)
@@ -635,16 +649,12 @@ class ExpenseListView(ListView):
             del query_params['page']  # Remove the 'page' parameter to avoid duplication
         context['query_params'] = query_params.urlencode()
 
-        return context
+        # Calculate the total amount of spent money
+        queryset = self.get_queryset()
+        total_amount = queryset.aggregate(total_amount=Sum('amount_spent'))['total_amount']
+        context['total_amount'] = total_amount if total_amount is not None else 0
 
-    def get_queryset(self):
-        tenant = getattr(self.request, 'tenant', None)
-        if tenant:
-            queryset = (Expense.objects.filter(tenant=tenant).
-                        select_related('auth_user', 'tenant').order_by('-timestamp'))
-        else:
-            queryset = (Expense.objects.all().
-                        select_related('auth_user', 'tenant').order_by('-timestamp'))
+        return context
 
     def get_queryset(self):
         tenant = getattr(self.request, 'tenant', None)
@@ -708,7 +718,6 @@ class ExpenseListView(ListView):
             messages.info(self.request, "No filter applied. Showing all expenses.")
 
         return queryset
-
 
 def update_expense(request):
     if request.method == 'POST':

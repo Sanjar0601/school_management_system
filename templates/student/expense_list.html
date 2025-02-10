@@ -3,7 +3,6 @@
 {% load tenant_tags %}
 {% has_teacher_profile as profile_exists %}
 
-
 {% block content %}
 <div class="animated fadeIn">
     <div class="card">
@@ -18,7 +17,6 @@
                         <option value="">Choose...</option>
                         <option value="Expense" {% if request.GET.category == 'Expense' %}selected{% endif %}>Expense</option>
                         <option value="Income" {% if request.GET.category == 'Income' %}selected{% endif %}>Income</option>
-
                     </select>
                 </div>
                 <div class="form-group col-md-4">
@@ -32,45 +30,40 @@
                         <option value="Others" {% if request.GET.types == 'Others' %}selected{% endif %}>Others</option>
                     </select>
                 </div>
-
-
-                    <div class="form-group col-md-4"> <!-- Start Date field -->
-                        <label for="start_date">Start Date</label>
-                        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
-                    </div>
-                    <div class="form-group col-md-4"> <!-- End Date field -->
-                        <label for="end_date">End Date</label>
-                        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
-                    </div>
-                    <div class="form-group col-md-4"> <!-- Status field -->
+                <div class="form-group col-md-4"> <!-- Start Date field -->
+                    <label for="start_date">Start Date</label>
+                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                </div>
+                <div class="form-group col-md-4"> <!-- End Date field -->
+                    <label for="end_date">End Date</label>
+                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                </div>
+                <div class="form-group col-md-4"> <!-- Status field -->
                     <label for="branch">Filial</label>
                     <select name="branch" id="branch" class="form-control">
                         <option value="">Choose...</option>
                         {% for tenant in tenants %}
                         <option value="{{ tenant.id }}" {% if request.GET.branch == tenant.id|stringformat:"s" %}selected{% endif %}>
-                        {{ tenant.name }}
+                            {{ tenant.name }}
                         </option>
                         {% endfor %}
                     </select>
-                    </div>
+                </div>
             </div>
 
-
-
             <!-- Submit Button -->
-            <div class="form-row mx-3 mt-2 d-flex align-items-center" > <!-- Add horizontal margin to create space on the sides -->
+            <div class="form-row mx-3 mt-2 d-flex align-items-center"> <!-- Add horizontal margin to create space on the sides -->
                 <div class="form-group col-md-1"> <!-- Align the button with previous fields -->
                     <button type="submit" class="btn btn-primary w-100">Search</button> <!-- w-100 ensures the button takes full width of the column -->
                 </div>
                 <div class="ml-3">
-                    <strong><p class="mb-3" style="font:bold;">Total: {{expenses.count}}</p></strong>
+                    <strong><p class="mb-3" style="font:bold;">Total: {{ expenses.count }}</p></strong>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Results Table -->
 <!-- Results Table -->
 <div class="animated fadeIn mt-4">
     <div class="card">
@@ -124,17 +117,25 @@
                                         </tr>
                                     {% endfor %}
                                 </tbody>
+                                <!-- Footer Row for Total Amount -->
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5" style="text-align: right;"><strong>Total Amount Spent:</strong></td>
+                                        <td><strong>{{ total_amount }}</strong></td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                             <div class="pagination">
                                 <!-- Show Previous page link if not on the first page -->
                                 {% if page_obj.has_previous %}
-                                <a href="?{{query_params }}&page={{ page_obj.previous_page_number }}"><i class="fa-solid fa-arrow-left"></i></a>
+                                <a href="?{{ query_params }}&page={{ page_obj.previous_page_number }}"><i class="fa-solid fa-arrow-left"></i></a>
                                 {% endif %}
                                 <!-- Show page number -->
                                 <span style="padding: 0 10px;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                                 <!-- Show Next page link if not on the last page -->
                                 {% if page_obj.has_next %}
-                                <a href="?{{query_params}}&page={{ page_obj.next_page_number }}"><i class="fa-solid fa-arrow-right"></i></a>
+                                <a href="?{{ query_params }}&page={{ page_obj.next_page_number }}"><i class="fa-solid fa-arrow-right"></i></a>
                                 {% endif %}
                             </div>
                         </div>
@@ -145,8 +146,7 @@
     </div>
 </div>
 
-<!-- Pagination Controls -->
-
+<!-- Edit Expense Modal -->
 <div class="modal fade" id="editExpenseModal" tabindex="-1" role="dialog" aria-labelledby="editExpenseModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -159,12 +159,10 @@
             <div class="modal-body">
                 <form id="editExpenseForm">
                     <input type="hidden" name="expense_id" id="editExpenseId">
-
                     <div class="form-group">
                         <label for="editComment">Comment</label>
                         <input type="text" name="comment" id="editComment" class="form-control">
                     </div>
-
                     <div class="form-group">
                         <label for="editCategory">Category</label>
                         <select name="category" id="editCategory" class="form-control">
@@ -172,7 +170,6 @@
                             <option value="Income">Income</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="editTypes">Type</label>
                         <select name="types" id="editTypes" class="form-control">
@@ -183,12 +180,10 @@
                             <option value="Others">Others</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="editAmount">Amount</label>
                         <input type="number" name="amount" id="editAmount" class="form-control">
                     </div>
-
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 </form>
             </div>
@@ -199,7 +194,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     $(document).ready(function () {
@@ -220,38 +214,37 @@
 
         // Save changes via AJAX
         $('#saveExpenseChanges').click(function () {
-        let expenseId = $('#editExpenseId').val();
-        let comment = $('#editComment').val();
-        let category = $('#editCategory').val();
-        let types = $('#editTypes').val();
-        let amount = $('#editAmount').val();
-        let csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+            let expenseId = $('#editExpenseId').val();
+            let comment = $('#editComment').val();
+            let category = $('#editCategory').val();
+            let types = $('#editTypes').val();
+            let amount = $('#editAmount').val();
+            let csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
 
-        $.ajax({
-        url: "{% url 'expense_update' %}",  // Ensure this URL matches your Django view
-        type: 'POST',
-        data: {
-        'expense_id': expenseId,
-        'comment': comment,
-        'category': category,
-        'types': types,
-        'amount_spent': amount,
-        'csrfmiddlewaretoken': csrfToken
-    },
-        success: function (response) {
-        if (response.status === 'success') {
-        alert('Expense updated successfully');
-        location.reload();
-    } else {
-        alert('Failed to update expense');
-    }
-    },
-        error: function () {
-        alert('Error updating expense');
-        }
-        });
+            $.ajax({
+                url: "{% url 'expense_update' %}",  // Ensure this URL matches your Django view
+                type: 'POST',
+                data: {
+                    'expense_id': expenseId,
+                    'comment': comment,
+                    'category': category,
+                    'types': types,
+                    'amount_spent': amount,
+                    'csrfmiddlewaretoken': csrfToken
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Expense updated successfully');
+                        location.reload();
+                    } else {
+                        alert('Failed to update expense');
+                    }
+                },
+                error: function () {
+                    alert('Error updating expense');
+                }
+            });
         });
     });
 </script>
 {% endblock %}
-</div>
