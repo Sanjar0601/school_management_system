@@ -441,43 +441,9 @@ class SaveAttendanceView(View):
 
                 # Send SMS notification
                 phone_number = student.phone_no  # Assuming the model has a `phone_number` field
-                if phone_number:
-                    self.send_sms(student, group, status, phone_number)
 
         return render(request, 'student/attendance_record.html')
 
-    def send_sms(self, student, group, status, phone_number):
-        # Get the appropriate message template based on status
-        message_template = MESSAGE_TEMPLATES.get(status, MESSAGE_TEMPLATES)
-        message_content = message_template.format(
-            name=student.name,  # Assuming PersonalInfo has a `name` field
-            group=group.name,  # Assuming Group has a `name` field
-            status=status,
-        )
-
-        # Prepare the SMS payload
-        sms_data = {
-            "messages": [
-                {
-                    "recipient": phone_number,
-                    "message-id": f"attendance_{student.id}_{group.id}",
-                    "sms": {
-                        "originator": "Polyglot",
-                        "ttl": 300,
-                        "content": {"text": message_content},
-                    },
-                }
-            ]
-        }
-        # Send the SMS
-        try:
-            response = requests.post(API_URL, json=sms_data, headers=HEADERS)
-            if response.status_code == 200:
-                print(f"SMS sent successfully to {phone_number}: {message_content}")
-            else:
-                print(f"Failed to send SMS to {phone_number}: {response.text}")
-        except requests.RequestException as e:
-            print(f"Error sending SMS to {phone_number}: {e}")
 
 
 
