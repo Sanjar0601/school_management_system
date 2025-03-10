@@ -3,7 +3,6 @@ from student.models import PersonalInfo
 from teacher.models import PersonalInfo as Teacher
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from employee.models import PersonalInfo as Employee
 from student.models import Group
 
 
@@ -18,7 +17,6 @@ def home_page(request):
     total_class = 0
 
     # Count employees and classes, filtered by tenant if necessary
-    total_employee = Employee.objects.count()
     tenant_user = TenantUser.objects.filter(user=request.user, tenant=tenant).first()
 
     if tenant:  # Ensure there is a tenant

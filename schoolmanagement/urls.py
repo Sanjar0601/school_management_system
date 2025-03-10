@@ -26,7 +26,6 @@ urlpatterns = [
     path('', include('administration.urls')),
     path('teacher/', include('teacher.urls')),
     path('student/', include('student.urls')),
-    path('employee/', include('employee.urls')),
     path('account/', include('account.urls')),
     # path('advanced_filters/', include('advanced_filters.urls'))
 ] + debug_toolbar_urls()

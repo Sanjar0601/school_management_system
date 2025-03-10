@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'administration',
     'teacher',
     'student',
-    'employee',
     'account',
     'django_celery_beat',
     'redis',
