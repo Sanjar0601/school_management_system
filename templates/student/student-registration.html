@@ -11,8 +11,9 @@
                     <div class="card-body">
                         {% csrf_token %}
                         {{ personal_info_form.as_p }}  <!-- This will render the fields with the specified Bootstrap classes -->
-                        <button id="submit" type="submit" class="btn btn-primary rounded-pill pull-right"  style="padding: 10px 20px;">Submit</button>
-
+<div class="d-flex justify-content-end mb-3"> <!-- Отступ снизу 3 уровня -->
+    <button type="submit" class="btn btn-primary ms-3">Submit</button> <!-- Отступ слева 3 уровня -->
+</div>
                     </div>
                 </div>
 
